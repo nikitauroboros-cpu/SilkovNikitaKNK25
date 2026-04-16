@@ -1,0 +1,264 @@
+:root {
+    --bg-color: #ffffff;
+    --accent-color: #2563eb;
+    --accent-dark: #1d4ed8;
+    --text-color: #1f2937;
+    --muted-color: #6b7280;
+    --card-border: #e5e7eb;
+    --page-bg: #f3f4f6;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--page-bg);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 5%;
+    background-color: var(--bg-color);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    list-style: none;
+}
+
+.nav-list a {
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.nav-list a:hover,
+.nav-list a:focus-visible {
+    color: var(--accent-color);
+}
+
+.main-content {
+    flex: 1;
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    padding: 2.5rem 5%;
+}
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    border-radius: 18px;
+    background-color: var(--bg-color);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.hero h1,
+.skills-section h2,
+.footer h3 {
+    margin-bottom: 0.5rem;
+}
+
+.btn,
+.btn-buy {
+    border: none;
+    border-radius: 8px;
+    background-color: var(--accent-color);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.8rem 1.4rem;
+    font-weight: 600;
+}
+
+.btn-header {
+    white-space: nowrap;
+}
+
+.btn:hover,
+.btn:focus-visible,
+.btn-buy:hover,
+.btn-buy:focus-visible {
+    background-color: var(--accent-dark);
+    transform: translateY(-1px);
+}
+
+.skills-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.section-note {
+    color: var(--muted-color);
+}
+
+.products-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    width: calc(25% - 20px);
+    min-width: 250px;
+    padding: 1rem;
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    background-color: var(--bg-color);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.product-img {
+    width: 100%;
+    height: 180px;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    object-fit: cover;
+    background-color: #dbeafe;
+}
+
+.product-title {
+    margin-bottom: 0.75rem;
+}
+
+.product-desc {
+    margin-bottom: 1rem;
+    color: var(--muted-color);
+}
+
+.product-price {
+    margin-bottom: 1rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+}
+
+.product-card button {
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2rem 5%;
+    background-color: #111827;
+    color: #f9fafb;
+}
+
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.subscribe-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: min(320px, 100%);
+}
+
+.subscribe-form input {
+    padding: 0.8rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+    .header,
+    .footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header {
+        text-align: center;
+    }
+
+    .nav-list {
+        justify-content: center;
+    }
+
+    .user-actions {
+        display: flex;
+        justify-content: center;
+    }
+
+    .product-card {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 600px) {
+    .main-content {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .hero {
+        padding: 1.5rem;
+    }
+
+    .nav-list {
+        gap: 1rem;
+    }
+
+    .product-card {
+        width: 100%;
+    }
+}
