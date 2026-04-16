@@ -1,6 +1,6 @@
 # SilkovNikitaKNK25
 
-Laboratory work №4  
+Laboratory work  
 Flexbox layout
 
 ## Опис
