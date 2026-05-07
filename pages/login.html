@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="header">
+    <div class="logo">Сілков Нікіта</div>
+
+    <nav class="main-nav" aria-label="Основна навігація">
+        <ul class="nav-list">
+            <li><a href="index.html">Головна</a></li>
+            <li><a href="register.html">Реєстрація</a></li>
+            <li><a href="login.html" aria-current="page">Вхід</a></li>
+        </ul>
+    </nav>
+
+    <div class="user-actions">
+        <a class="btn btn-header" href="#authForm">До форми</a>
+    </div>
+</header>
+
+<main class="auth-layout">
+    <section class="hero auth-hero">
+        <h1>Вхід</h1>
+        <p>Увійди в акаунт. Поля перевіряються вбудованою HTML5-валидацією (без JavaScript).</p>
+    </section>
+
+    <section class="auth-shell" id="authForm">
+        <section class="form-section">
+            <h2>Увійти</h2>
+
+            <form action="#" method="POST" class="auth-form">
+                <fieldset>
+                    <legend>1. Дані для входу</legend>
+
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input
+                                type="email"
+                                id="loginEmail"
+                                name="email"
+                                required
+                                autocomplete="email"
+                                placeholder="name@example.com"
+                        />
+                        <span class="form-hint">Використовуйте робочу або особисту пошту.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль</label>
+                        <input
+                                type="password"
+                                id="loginPassword"
+                                name="password"
+                                required
+                                minlength="6"
+                                autocomplete="current-password"
+                                placeholder="Мінімум 6 символів"
+                        />
+                        <span class="form-hint">Мінімальна довжина — 6 символів.</span>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>2. Додатково</legend>
+
+                    <div class="form-actions">
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="rememberMe" name="rememberMe">
+                            <label for="rememberMe">Запам’ятати мене</label>
+                        </div>
+
+                        <a class="form-hint" href="register.html">Немає акаунта? Реєстрація</a>
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="btn btn-primary btn-full">Увійти</button>
+            </form>
+        </section>
+
+        <aside class="auth-aside" aria-label="Підказки">
+            <h3>Швидко</h3>
+            <p>Ця сторінка — частина лабораторної: форма оформлена семантично і має валідацію HTML5.</p>
+            <ul class="auth-links">
+                <li><a href="index.html">Повернутися на головну</a></li>
+                <li><a href="register.html">Створити акаунт</a></li>
+                <li><a href="#contacts">Контакти</a></li>
+            </ul>
+        </aside>
+    </section>
+</main>
+
+<footer class="footer" id="contacts">
+    <div class="footer-info">
+        <p>&copy; 2026 Сілков Нікіта</p>
+
+        <h3>Контакти</h3>
+        <ul class="contact-list">
+            <li>Email: nikitauroboros@gmail.com</li>
+            <li>Телефон: +380970418144</li>
+        </ul>
+    </div>
+
+    <form class="subscribe-form">
+        <label for="subscribeEmail">Email для підписки:</label>
+        <input id="subscribeEmail" type="email" placeholder="Введіть email">
+        <button class="btn" type="submit">Підписатися</button>
+    </form>
+</footer>
+</body>
+</html>

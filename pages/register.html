@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="header">
+    <div class="logo">Сілков Нікіта</div>
+
+    <nav class="main-nav" aria-label="Основна навігація">
+        <ul class="nav-list">
+            <li><a href="index.html">Головна</a></li>
+            <li><a href="register.html" aria-current="page">Реєстрація</a></li>
+            <li><a href="login.html">Вхід</a></li>
+        </ul>
+    </nav>
+
+    <div class="user-actions">
+        <a class="btn btn-header" href="#authForm">До форми</a>
+    </div>
+</header>
+
+<main class="auth-layout">
+    <section class="hero auth-hero">
+        <h1>Реєстрація</h1>
+        <p>Створи акаунт. Усі перевірки виконуються браузером через HTML5-валідацію (без JavaScript).</p>
+    </section>
+
+    <section class="auth-shell" id="authForm">
+        <section class="form-section">
+            <h2>Створити акаунт</h2>
+
+            <form action="#" method="POST" class="auth-form">
+                <fieldset>
+                    <legend>1. Основні дані</legend>
+
+                    <div class="form-group">
+                        <label for="fullName">ПІБ</label>
+                        <input
+                                type="text"
+                                id="fullName"
+                                name="fullName"
+                                required
+                                minlength="3"
+                                placeholder="Іванов Іван Іванович"
+                        />
+                        <span class="form-hint">Введи ім’я та прізвище як у документах.</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" name="email" required placeholder="name@example.com" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birthDate">Дата народження</label>
+                            <input type="date" id="birthDate" name="birthDate" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Телефон</label>
+                        <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                pattern="[\+]\d{2}\d{10}"
+                                placeholder="+380991234567"
+                                required
+                                title="Формат: +380XXXXXXXXX"
+                        />
+                        <span class="form-hint">Формат: <strong>+380</strong> та 9 цифр далі.</span>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>2. Пароль та згода</legend>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regPassword">Пароль</label>
+                            <input
+                                    type="password"
+                                    id="regPassword"
+                                    name="password"
+                                    required
+                                    minlength="6"
+                                    autocomplete="new-password"
+                                    placeholder="Мінімум 6 символів"
+                            />
+                            <span class="form-hint">Рекомендується 8+ символів, літера + цифра.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="regPasswordRepeat">Повторіть пароль</label>
+                            <input
+                                    type="password"
+                                    id="regPasswordRepeat"
+                                    name="passwordRepeat"
+                                    required
+                                    minlength="6"
+                                    autocomplete="new-password"
+                                    placeholder="Повторіть пароль"
+                            />
+                            <span class="form-hint">Поки без JS: збіг паролів не перевіряється автоматично.</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="agreeRules" name="agreeRules" required />
+                            <label for="agreeRules">Я погоджуюсь з правилами сайту</label>
+                        </div>
+
+                        <a class="form-hint" href="login.html">Вже є акаунт? Увійти</a>
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="btn btn-primary btn-full">Зареєструватися</button>
+            </form>
+        </section>
+
+        <aside class="auth-aside" aria-label="Підказки">
+            <h3>Підказка</h3>
+            <p>Для перевірки валідації спробуй відправити форму з порожніми полями або телефоном без “+380”.</p>
+            <ul class="auth-links">
+                <li><a href="index.html">Повернутися на головну</a></li>
+                <li><a href="login.html">Перейти на вхід</a></li>
+                <li><a href="#contacts">Контакти</a></li>
+            </ul>
+        </aside>
+    </section>
+</main>
+
+<footer class="footer" id="contacts">
+    <div class="footer-info">
+        <p>&copy; 2026 Сілков Нікіта</p>
+
+        <h3>Контакти</h3>
+        <ul class="contact-list">
+            <li>Email: nikitauroboros@gmail.com</li>
+            <li>Телефон: +380970418144</li>
+        </ul>
+    </div>
+
+    <form class="subscribe-form">
+        <label for="subscribeEmail">Email для підписки:</label>
+        <input id="subscribeEmail" type="email" placeholder="Введіть email">
+        <button class="btn" type="submit">Підписатися</button>
+    </form>
+</footer>
+</body>
+</html>
