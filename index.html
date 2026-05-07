@@ -4,67 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сілков Нікіта - Особистий сайт</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body>
 
-<header>
-    <h1>Сілков Нікіта</h1>
+<header class="header">
+    <div class="logo">Сілков Нікіта</div>
 
-    <nav>
-        <ul>
+    <nav class="main-nav">
+        <ul class="nav-list">
             <li><a href="#">Головна</a></li>
             <li><a href="#">Про мене</a></li>
             <li><a href="#">Проєкти</a></li>
             <li><a href="#">Контакти</a></li>
         </ul>
     </nav>
+
+    <div class="user-actions">
+        <a class="btn btn-header" href="#contacts">Написати</a>
+    </div>
 </header>
 
-<main>
+<main class="page-layout">
+    <aside class="sidebar">
+        <h3>Фільтри</h3>
+        <ul class="filters-list">
+            <li><label><input type="checkbox"> HTML</label></li>
+            <li><label><input type="checkbox"> CSS</label></li>
+            <li><label><input type="checkbox"> Дизайн</label></li>
+            <li><label><input type="checkbox"> Адаптив</label></li>
+        </ul>
+    </aside>
 
-<section>
-    <h2>Ласкаво прошу на мій сайт</h2>
-    <p>Це моя особиста веб-сторінка. Тут ви можете знайти інформацію про мене.</p>
-    <a href="#">Дізнатися більше</a>
-</section>
+    <section class="products-content">
+        <section class="hero">
+            <h1>Ласкаво прошу на мій сайт</h1>
+            <p>Це моя особиста веб-сторінка. Тут ви можете знайти інформацію про мене, мої навички та способи зв'язку.</p>
+            <a class="btn" href="#skills">Дізнатися більше</a>
+        </section>
 
-<section>
-    <h2>Мої навички</h2>
+        <section class="skills-section" id="skills">
+            <h2>Мої навички</h2>
+            <p class="section-note">У картках використовуються випадкові зображення, які завантажуються з онлайн-сервісу при відкритті сторінки.</p>
 
-    <article>
-        <img src="Пізніше тут буде картинка" alt="HTML">
-        <h3>HTML</h3>
-        <p>Вивчаю створення веб-сторінок.</p>
-    </article>
+            <div class="products-grid">
+                <article class="product-card">
+                    <img class="product-img" src="https://picsum.photos/400/260?random=11" alt="Випадкове зображення для HTML">
+                    <h3 class="product-title">HTML</h3>
+                    <p class="product-desc">Вивчаю створення структурованих веб-сторінок та правильну семантичну розмітку.</p>
+                    <span class="product-price">Початковий рівень</span>
+                    <button class="btn-buy" type="button">Детальніше</button>
+                </article>
 
-    <article>
-        <img src="=Пізніше тут буде картинка" alt="CSS">
-        <h3>CSS</h3>
-        <p>Вивчаю стилізацію сайтів.</p>
-    </article>
+                <article class="product-card">
+                    <img class="product-img" src="https://picsum.photos/400/260?random=22" alt="Випадкове зображення для CSS">
+                    <h3 class="product-title">CSS</h3>
+                    <p class="product-desc">Освоюю стилізацію сайтів, роботу з кольорами, відступами, шрифтами та Flexbox.</p>
+                    <span class="product-price">У процесі вивчення</span>
+                    <button class="btn-buy" type="button">Детальніше</button>
+                </article>
 
+                <article class="product-card">
+                    <img class="product-img" src="https://picsum.photos/400/260?random=33" alt="Випадкове зображення для веб-дизайну">
+                    <h3 class="product-title">Веб-дизайн</h3>
+                    <p class="product-desc">Прагну створювати охайні та зручні інтерфейси, які добре виглядають на різних екранах.</p>
+                    <span class="product-price">Практичні роботи</span>
+                    <button class="btn-buy" type="button">Детальніше</button>
+                </article>
 
-</section>
-
+                <article class="product-card">
+                    <img class="product-img" src="https://picsum.photos/400/260?random=44" alt="Випадкове зображення для адаптивної верстки">
+                    <h3 class="product-title">Адаптивна верстка</h3>
+                    <p class="product-desc">Навчаюсь будувати сторінки, де блоки переносяться та коректно перебудовуються при зміні ширини екрана.</p>
+                    <span class="product-price">CSS Grid layout</span>
+                    <button class="btn-buy" type="button">Детальніше</button>
+                </article>
+            </div>
+        </section>
+    </section>
 </main>
 
-<footer>
+<footer class="footer" id="contacts">
+    <div class="footer-info">
+        <p>&copy; 2025 Сілков Нікіта</p>
 
-<p>&copy; 2025 Сілков Нікіта</p>
+        <h3>Контакти</h3>
+        <ul class="contact-list">
+            <li>Email: nikitauroboros@gmail.com</li>
+            <li>Телефон: +380970418144</li>
+        </ul>
+    </div>
 
-<h3>Контакти</h3>
-<ul>
-<li>Email: nikitauroboros@gmail.com</li>
-<li>Телефон: +380970418144</li>
-</ul>
-
-<form>
-<label>Email для підписки:</label>
-<input type="email" placeholder="Введіть email">
-<button>Підписатися</button>
-</form>
-
+    <form class="subscribe-form">
+        <label for="email">Email для підписки:</label>
+        <input id="email" type="email" placeholder="Введіть email">
+        <button class="btn" type="submit">Підписатися</button>
+    </form>
 </footer>
 
 </body>
