@@ -154,6 +154,64 @@ img {
     white-space: nowrap;
 }
 
+.menu-toggle {
+    display: none;
+    padding: 0.35rem;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.menu-toggle:hover,
+.menu-toggle:focus-visible {
+    color: var(--accent-color);
+    background-color: rgba(37, 99, 235, 0.08);
+}
+
+.btn-cart {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    font-weight: 600;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.social-links {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.social-links a {
+    display: inline-flex;
+    padding: 0.35rem;
+    border-radius: 8px;
+    color: #9ca3af;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.social-links a:hover,
+.social-links a:focus-visible {
+    color: var(--accent-color);
+    background-color: rgba(37, 99, 235, 0.12);
+}
+
+.social-links svg {
+    display: block;
+}
+
 .btn:hover,
 .btn:focus-visible,
 .btn-buy:hover,
@@ -436,12 +494,26 @@ legend {
     .user-actions {
         display: flex;
         justify-content: center;
+        flex-wrap: wrap;
     }
 }
 
 @media screen and (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .main-nav .nav-list {
+        display: none;
+    }
+
     .page-layout {
         grid-template-columns: 1fr;
+        padding: 1rem 4%;
+    }
+
+    .auth-layout {
+        padding: 1.25rem 4%;
     }
 
     .auth-shell {
@@ -453,8 +525,35 @@ legend {
     }
 
     .header {
-        flex-direction: column;
-        gap: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        flex: 1;
+    }
+
+    .skills-section h2,
+    .form-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .hero p,
+    .product-desc,
+    .section-note {
+        font-size: 0.95rem;
+    }
+
+    .products-grid {
+        gap: 1.25rem;
+    }
+
+    .social-links {
+        justify-content: flex-start;
     }
 }
 
