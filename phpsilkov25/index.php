@@ -2,6 +2,7 @@
 $appName = 'Task Manager';
 $taskTitle = 'Вивчити основи PHP';
 $taskTimeEstimate = 2;
+$isCompleted = false;
 ?>
 <!DOCTYPE html>
 <html lang="uk">
@@ -9,6 +10,10 @@ $taskTimeEstimate = 2;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $appName ?></title>
+    <style>
+        .task-done { color: green; }
+        .task-pending { color: gray; }
+    </style>
 </head>
 <body>
     <header>
@@ -17,7 +22,14 @@ $taskTimeEstimate = 2;
     <main>
         <h2>Моє завдання</h2>
         <ul>
-            <li>Завдання: <?= $taskTitle ?></li>
+            <li class="<?= $isCompleted ? 'task-done' : 'task-pending' ?>">
+                Завдання: <?= $taskTitle ?> —
+                <?php if ($isCompleted): ?>
+                    ✔️ Виконано
+                <?php else: ?>
+                    🕒 В процесі
+                <?php endif; ?>
+            </li>
             <li>Очікуваний час: <?= $taskTimeEstimate ?> год.</li>
         </ul>
     </main>
