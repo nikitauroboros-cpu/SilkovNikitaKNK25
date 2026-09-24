@@ -3,8 +3,8 @@ date_default_timezone_set('Europe/Kyiv');
 
 function formatTitle($text, $maxLength = 20)
 {
-    if (strlen($text) > $maxLength) {
-        return substr($text, 0, $maxLength) . '...';
+    if (mb_strlen($text, 'UTF-8') > $maxLength) {
+        return mb_substr($text, 0, $maxLength, 'UTF-8') . '...';
     }
 
     return $text;
@@ -26,9 +26,13 @@ function getCurrentGreeting()
 }
 
 $appName = 'Task Manager';
-$taskTitle = 'Learn PHP functions and text formatting';
-$taskTimeEstimate = 2;
-$isCompleted = false;
+$tasks = [
+    ['id' => 1, 'title' => 'Виконати лабораторну роботу №5', 'priority' => 'High', 'is_completed' => false],
+    ['id' => 2, 'title' => 'Повторити масиви', 'priority' => 'Medium', 'is_completed' => true],
+    ['id' => 3, 'title' => 'Перевірити цикл foreach у шаблоні', 'priority' => 'High', 'is_completed' => false],
+    ['id' => 4, 'title' => 'Додати скриншот', 'priority' => 'Low', 'is_completed' => true],
+    ['id' => 5, 'title' => 'Завантажити звіт на GitHub', 'priority' => 'Medium', 'is_completed' => false],
+];
 ?>
 <!DOCTYPE html>
 <html lang="uk">
@@ -47,17 +51,20 @@ $isCompleted = false;
         <p><?= getCurrentGreeting() ?>!</p>
     </header>
     <main>
-        <h2>Моє завдання</h2>
+        <h2>Мої завдання</h2>
         <ul>
-            <li class="<?= $isCompleted ? 'task-done' : 'task-pending' ?>">
-                Завдання: <?= formatTitle($taskTitle) ?> —
-                <?php if ($isCompleted): ?>
-                    ✔️ Виконано
-                <?php else: ?>
-                    🕒 В процесі
-                <?php endif; ?>
-            </li>
-            <li>Очікуваний час: <?= $taskTimeEstimate ?> год.</li>
+            <?php foreach ($tasks as $task): ?>
+                <li class="<?= $task['is_completed'] ? 'task-done' : 'task-pending' ?>">
+                    №<?= $task['id'] ?>:
+                    <?= htmlspecialchars(formatTitle($task['title']), ENT_QUOTES, 'UTF-8') ?> —
+                    Пріоритет: <?= htmlspecialchars($task['priority'], ENT_QUOTES, 'UTF-8') ?> —
+                    <?php if ($task['is_completed']): ?>
+                        ✔️ Виконано
+                    <?php else: ?>
+                        🕒 В процесі
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
         </ul>
     </main>
 </body>
