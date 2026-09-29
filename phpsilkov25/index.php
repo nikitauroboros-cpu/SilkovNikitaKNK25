@@ -26,13 +26,19 @@ function getCurrentGreeting()
 }
 
 $appName = 'Task Manager';
-$tasks = [
-    ['id' => 1, 'title' => 'Виконати лабораторну роботу №5', 'priority' => 'High', 'is_completed' => false],
-    ['id' => 2, 'title' => 'Повторити масиви', 'priority' => 'Medium', 'is_completed' => true],
-    ['id' => 3, 'title' => 'Перевірити цикл foreach у шаблоні', 'priority' => 'High', 'is_completed' => false],
-    ['id' => 4, 'title' => 'Додати скриншот', 'priority' => 'Low', 'is_completed' => true],
-    ['id' => 5, 'title' => 'Завантажити звіт на GitHub', 'priority' => 'Medium', 'is_completed' => false],
-];
+$file = fopen(__DIR__ . '/data.json', 'r');
+$tasks = null;
+if ($file) {
+    if (flock($file, LOCK_SH)) {
+        $tasks = json_decode(stream_get_contents($file), true);
+        flock($file, LOCK_UN);
+    }
+    fclose($file);
+}
+if (!is_array($tasks)) {
+    http_response_code(500);
+    exit('Не вдалося прочитати список завдань.');
+}
 ?>
 <!DOCTYPE html>
 <html lang="uk">
@@ -52,6 +58,10 @@ $tasks = [
     </header>
     <main>
         <h2>Мої завдання</h2>
+        <p><a href="create.php">Додати нове завдання</a></p>
+        <?php if (($_GET['created'] ?? '') === '1'): ?>
+            <p>Завдання збережено.</p>
+        <?php endif; ?>
         <ul>
             <?php foreach ($tasks as $task): ?>
                 <li class="<?= $task['is_completed'] ? 'task-done' : 'task-pending' ?>">
@@ -62,6 +72,9 @@ $tasks = [
                         ✔️ Виконано
                     <?php else: ?>
                         🕒 В процесі
+                    <?php endif; ?>
+                    <?php if (isset($task['description']) && $task['description'] !== ''): ?>
+                        <p><?= nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')) ?></p>
                     <?php endif; ?>
                 </li>
             <?php endforeach; ?>

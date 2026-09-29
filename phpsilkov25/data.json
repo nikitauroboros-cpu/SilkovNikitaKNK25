@@ -1,0 +1,45 @@
+[
+    {
+        "id": 1,
+        "title": "Виконати лабораторну роботу №5",
+        "description": "",
+        "priority": "High",
+        "is_completed": false
+    },
+    {
+        "id": 2,
+        "title": "Повторити масиви",
+        "description": "",
+        "priority": "Medium",
+        "is_completed": true
+    },
+    {
+        "id": 3,
+        "title": "Перевірити цикл foreach у шаблоні",
+        "description": "",
+        "priority": "High",
+        "is_completed": false
+    },
+    {
+        "id": 4,
+        "title": "Додати скриншот",
+        "description": "",
+        "priority": "Low",
+        "is_completed": true
+    },
+    {
+        "id": 5,
+        "title": "Завантажити звіт на GitHub",
+        "description": "",
+        "priority": "Medium",
+        "is_completed": false
+    },
+    {
+        "id": 6,
+        "title": "Перевірити форму",
+        "description": "Перевірено POST, GET та повідомлення про порожні поля.",
+        "priority": "High",
+        "is_completed": false,
+        "created_at": "2026-09-29 19:34:19"
+    }
+]
