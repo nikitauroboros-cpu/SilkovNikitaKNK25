@@ -78,19 +78,51 @@ const skills = [
 const container = document.querySelector(".products-grid");
 let selectedSkills = [];
 
-container.innerHTML = skills
-    .map((skill) => `
-        <article class="product-card">
-            <img class="product-img" src="${skill.image}"
-                ${skill.srcset ? `srcset="${skill.srcset}" sizes="${skill.sizes}"` : ""}
-                width="400" height="260" alt="${skill.alt}" loading="lazy">
-            <h3 class="product-title">${skill.title}</h3>
-            <p class="product-desc">${skill.description}</p>
-            <span class="product-price">${skill.level}</span>
-            <button class="btn-buy" type="button" data-id="${skill.id}" aria-pressed="false">Обрати навичку</button>
-        </article>
-    `)
-    .join("");
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchSkills() {
+    await delay(2000);
+    if (new URLSearchParams(window.location.search).get("loadError") === "1") {
+        throw new Error("Не вдалося завантажити навички. Оновіть сторінку та спробуйте ще раз.");
+    }
+    return skills;
+}
+
+async function initSkills() {
+    const loader = document.getElementById("loader");
+    loader.classList.remove("hidden");
+    container.innerHTML = "";
+    container.setAttribute("aria-busy", "true");
+
+    try {
+        const data = await fetchSkills();
+        container.innerHTML = data
+            .map((skill) => `
+                <article class="product-card">
+                    <img class="product-img" src="${skill.image}"
+                        ${skill.srcset ? `srcset="${skill.srcset}" sizes="${skill.sizes}"` : ""}
+                        width="400" height="260" alt="${skill.alt}" loading="lazy">
+                    <h3 class="product-title">${skill.title}</h3>
+                    <p class="product-desc">${skill.description}</p>
+                    <span class="product-price">${skill.level}</span>
+                    <button class="btn-buy" type="button" data-id="${skill.id}" aria-pressed="false">Обрати навичку</button>
+                </article>
+            `)
+            .join("");
+        updateUI();
+    } catch (error) {
+        const message = document.createElement("p");
+        message.className = "load-error";
+        message.setAttribute("role", "alert");
+        message.textContent = error.message;
+        container.replaceChildren(message);
+    } finally {
+        loader.classList.add("hidden");
+        container.setAttribute("aria-busy", "false");
+    }
+}
 
 function toggleSkill(id) {
     const skill = skills.find((item) => item.id === id);
@@ -140,3 +172,4 @@ document.querySelector("#clear-selection").addEventListener("click", () => {
 });
 
 updateUI();
+initSkills();
