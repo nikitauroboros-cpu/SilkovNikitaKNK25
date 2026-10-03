@@ -61,7 +61,11 @@
             <p class="section-note">У картках використовуються випадкові зображення, які завантажуються з онлайн-сервісу при відкритті сторінки.</p>
 
             <p class="section-note">Оберіть навички, які вас зацікавили. Повторне натискання скасовує вибір.</p>
-            <div class="products-grid"></div>
+            <div class="loader-container" id="loader" role="status">
+                <div class="spinner" aria-hidden="true"></div>
+                <p>Завантаження навичок...</p>
+            </div>
+            <div class="products-grid" aria-busy="true"></div>
         </section>
         <section class="hero" id="selected-skills" aria-labelledby="selection-title">
             <h2 id="selection-title">Обрані навички</h2>
