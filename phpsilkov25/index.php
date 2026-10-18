@@ -1,4 +1,5 @@
 <?php
+session_start();
 date_default_timezone_set('Europe/Kyiv');
 
 function formatTitle($text, $maxLength = 20)
@@ -53,6 +54,11 @@ if (!is_array($tasks)) {
 </head>
 <body>
     <header>
+        <?php if (($_SESSION['is_logged_in'] ?? false) === true): ?>
+            <p>Привіт, <?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?>! <a href="logout.php">Вийти</a></p>
+        <?php else: ?>
+            <p>Ви увійшли як Гість. <a href="login.php">Увійти</a></p>
+        <?php endif; ?>
         <h1><?= $appName ?></h1>
         <p><?= getCurrentGreeting() ?>!</p>
     </header>

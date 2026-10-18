@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (($_SESSION['is_logged_in'] ?? false) !== true) {
+    header('Location: login.php');
+    exit;
+}
 date_default_timezone_set('Europe/Kyiv');
 $title = '';
 $description = '';
