@@ -1,0 +1,92 @@
+[
+    {
+        "id": 1,
+        "title": "Виконати лабораторну роботу №5",
+        "isCompleted": false,
+        "deadline": null,
+        "description": "",
+        "priority": "High",
+        "created_at": null,
+        "avatar": null
+    },
+    {
+        "id": 2,
+        "title": "Повторити масиви",
+        "isCompleted": true,
+        "deadline": null,
+        "description": "",
+        "priority": "Medium",
+        "created_at": null,
+        "avatar": null
+    },
+    {
+        "id": 3,
+        "title": "Перевірити цикл foreach у шаблоні",
+        "isCompleted": false,
+        "deadline": null,
+        "description": "",
+        "priority": "High",
+        "created_at": null,
+        "avatar": null
+    },
+    {
+        "id": 4,
+        "title": "Додати скриншот",
+        "isCompleted": true,
+        "deadline": null,
+        "description": "",
+        "priority": "Low",
+        "created_at": null,
+        "avatar": null
+    },
+    {
+        "id": 5,
+        "title": "Завантажити звіт на GitHub",
+        "isCompleted": false,
+        "deadline": null,
+        "description": "",
+        "priority": "Medium",
+        "created_at": null,
+        "avatar": null
+    },
+    {
+        "id": 6,
+        "title": "Перевірити форму",
+        "isCompleted": false,
+        "deadline": null,
+        "description": "Перевірено POST, GET та повідомлення про порожні поля.",
+        "priority": "High",
+        "created_at": "2026-09-29 19:34:19",
+        "avatar": null
+    },
+    {
+        "id": 7,
+        "title": "Повторити ООП",
+        "isCompleted": false,
+        "deadline": "2026-10-20",
+        "description": "Навчальний приклад простроченого завдання для ЛР10.",
+        "priority": "High",
+        "created_at": "2026-10-22 00:41:13",
+        "avatar": null
+    },
+    {
+        "id": 8,
+        "title": "Перевірити класи",
+        "isCompleted": true,
+        "deadline": "2026-10-22",
+        "description": "Перевірити створення, серіалізацію та збереження об’єктів.",
+        "priority": "Medium",
+        "created_at": "2026-10-22 00:41:35",
+        "avatar": null
+    },
+    {
+        "id": 9,
+        "title": "Оформити звіт ЛР10",
+        "isCompleted": false,
+        "deadline": "2026-10-30",
+        "description": "Додати пояснення методів, скриншоти та відповіді на запитання.",
+        "priority": "Medium",
+        "created_at": "2026-10-22 00:41:56",
+        "avatar": null
+    }
+]

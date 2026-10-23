@@ -1,5 +1,7 @@
 <?php
+declare(strict_types=1);
 session_start();
+require_once __DIR__ . '/TaskRepository.php';
 if (($_SESSION['is_logged_in'] ?? false) !== true) {
     header('Location: login.php');
     exit;
@@ -8,6 +10,7 @@ date_default_timezone_set('Europe/Kyiv');
 $title = '';
 $description = '';
 $priority = '';
+$deadline = '';
 $errors = [];
 $method = ($_GET['method'] ?? '') === 'GET' ? 'GET' : 'POST';
 $isDemo = isset($_GET['demo']) || $method === 'GET';
@@ -21,7 +24,7 @@ function escape($value)
 }
 if ($submitted) {
     $input = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
-    foreach (['title', 'description', 'priority'] as $field) {
+    foreach (['title', 'description', 'priority', 'deadline'] as $field) {
         if (isset($input[$field]) && !is_string($input[$field])) {
             $errors[] = 'Некоректний формат поля ' . $field;
         }
@@ -29,6 +32,13 @@ if ($submitted) {
     $title = trim(is_string($input['title'] ?? null) ? $input['title'] : '');
     $description = trim(is_string($input['description'] ?? null) ? $input['description'] : '');
     $priority = trim(is_string($input['priority'] ?? null) ? $input['priority'] : '');
+    $deadline = trim(is_string($input['deadline'] ?? null) ? $input['deadline'] : '');
+    if ($deadline !== '') {
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $deadline);
+        if (!$date || $date->format('Y-m-d') !== $deadline) {
+            $errors[] = 'Вкажіть коректну дату дедлайну.';
+        }
+    }
     if ($title === '') {
         $errors[] = 'Назва є обов’язковою.';
     }
@@ -52,38 +62,11 @@ if ($submitted) {
         var_dump($_GET);
         $dump = ob_get_clean() . "\n\$_FILES:\n" . $dump;
     } elseif (empty($errors)) {
-        $file = fopen(__DIR__ . '/data.json', 'c+');
-        if (!$file || !flock($file, LOCK_EX)) {
-            $errors[] = 'Не вдалося відкрити файл для збереження.';
-        } else {
-            $content = stream_get_contents($file);
-            $tasks = $content === '' ? [] : json_decode($content, true);
-            if (!is_array($tasks)) {
-                $errors[] = 'Файл завдань пошкоджено. Дані не змінено.';
-            } else {
-                $tasks[] = [
-                    'id' => empty($tasks) ? 1 : max(array_column($tasks, 'id')) + 1,
-                    'title' => $title,
-                    'description' => $description,
-                    'priority' => $priority,
-                    'is_completed' => false,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'avatar' => $avatarPath,
-                ];
-                $json = json_encode($tasks, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                if ($json === false) {
-                    $errors[] = 'Не вдалося перетворити дані в JSON.';
-                } else {
-                    rewind($file);
-                    if (fwrite($file, $json) !== strlen($json) || !ftruncate($file, strlen($json)) || !fflush($file)) {
-                        $errors[] = 'Не вдалося записати завдання.';
-                    }
-                }
-            }
-            flock($file, LOCK_UN);
-        }
-        if (is_resource($file)) {
-            fclose($file);
+        try {
+            $repo = new TaskRepository(__DIR__ . '/tasks.json');
+            $repo->add($title, $deadline ?: null, $description, $priority, $avatarPath);
+        } catch (Throwable $error) {
+            $errors[] = 'Не вдалося зберегти завдання. Перевірте файл tasks.json та права запису.';
         }
         if (!empty($errors) && $avatarPath !== null) {
             unlink(__DIR__ . '/' . $avatarPath);
@@ -141,6 +124,8 @@ if ($submitted) {
         <?php endif; ?>
         <label for="title">Назва завдання</label>
         <input type="text" id="title" name="title" value="<?= escape($title) ?>">
+        <label for="deadline">Дедлайн (необов’язково)</label>
+        <input type="date" id="deadline" name="deadline" value="<?= escape($deadline) ?>">
         <label for="description">Опис завдання</label>
         <textarea id="description" name="description" rows="4"><?= escape($description) ?></textarea>
         <label for="priority">Пріоритет</label>
