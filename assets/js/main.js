@@ -4,6 +4,13 @@ const container = document.querySelector(".products-grid");
 const retryButton = document.getElementById("retryProjects");
 let globalStoreProjects = [];
 let selectedProjects = [];
+const searchInput = document.getElementById("searchInput");
+const searchResultCount = document.getElementById("searchResultCount");
+const orderForm = document.getElementById("checkoutOrderForm");
+const promoInput = document.getElementById("orderPromo");
+const requestResult = document.getElementById("requestResult");
+// ЛР №15: умовні одиниці для демонстрації reduce() і SALE10, не ціна послуг.
+const DEMO_PROJECT_PRICE = 100;
 
 // Дані зовнішнього API вставляємо в шаблони тільки після екранування.
 function escapeHTML(value) {
@@ -61,17 +68,9 @@ async function fetchProjects() {
     }
 }
 
-async function initProjects() {
-    const loader = document.getElementById("loader");
-    loader.classList.remove("hidden");
-    retryButton.classList.add("hidden");
-    retryButton.disabled = true;
-    container.replaceChildren();
-    container.setAttribute("aria-busy", "true");
-    try {
-        const data = await fetchProjects();
-        globalStoreProjects = data;
-        container.innerHTML = data.length ? data.map((project) => `
+// Один рендерер для первинного завантаження та живого пошуку.
+function renderProjects(projectsToDisplay) {
+    container.innerHTML = projectsToDisplay.length ? projectsToDisplay.map((project) => `
             <article class="product-card" draggable="true" data-id="${project.id}">
                 ${project.image ? `<img class="product-img" draggable="false" src="${escapeHTML(project.image)}"
                     width="400" height="260" alt="${escapeHTML(project.alt)}" loading="lazy">` : ""}
@@ -81,7 +80,33 @@ async function initProjects() {
                 ${project.url ? `<p><a draggable="false" href="${escapeHTML(project.url)}" target="_blank" rel="noopener noreferrer">Переглянути на GitHub ↗</a></p>` : ""}
                 <button class="btn-buy" type="button" data-id="${project.id}" aria-pressed="false">Обрати проєкт</button>
             </article>
-        `).join("") : '<p class="section-note">Публічних проєктів поки немає.</p>';
+        `).join("") : '<p class="section-note">Проєктів не знайдено.</p>';
+    syncProjectButtons();
+}
+
+function applyProjectSearch() {
+    const query = searchInput.value.trim().toLowerCase();
+    const matchedProjects = globalStoreProjects.filter((project) => project.title.toLowerCase().includes(query));
+    searchResultCount.textContent = query ? `Знайдено проєктів: ${matchedProjects.length}` : "";
+    renderProjects(matchedProjects);
+}
+
+searchInput.addEventListener("input", applyProjectSearch);
+
+async function initProjects() {
+    const loader = document.getElementById("loader");
+    loader.classList.remove("hidden");
+    retryButton.classList.add("hidden");
+    retryButton.disabled = true;
+    searchInput.disabled = true;
+    searchResultCount.textContent = "";
+    container.replaceChildren();
+    container.setAttribute("aria-busy", "true");
+    try {
+        const data = await fetchProjects();
+        globalStoreProjects = data;
+        searchInput.disabled = false;
+        applyProjectSearch();
         updateUI();
     } catch (error) {
         const message = document.createElement("p");
@@ -115,6 +140,14 @@ function calculateTotal() {
     return selectedProjects.reduce((total) => total + 1, 0);
 }
 
+function syncProjectButtons() {
+    container.querySelectorAll(".btn-buy").forEach((button) => {
+        const selected = selectedProjects.some((project) => project.id === Number(button.dataset.id));
+        button.setAttribute("aria-pressed", String(selected));
+        button.textContent = selected ? "Прибрати з обраного" : "Обрати проєкт";
+    });
+}
+
 function updateUI() {
     const total = calculateTotal();
     document.querySelector(".selection-counter").textContent = total;
@@ -122,14 +155,11 @@ function updateUI() {
         ? `Обрано проєктів: ${total}. ${selectedProjects.map((project) => project.title).join(", ")}.`
         : "Поки нічого не обрано. Позначте проєкти, які вас зацікавили.";
     document.getElementById("clear-selection").disabled = total === 0;
-    container.querySelectorAll(".btn-buy").forEach((button) => {
-        const selected = selectedProjects.some((project) => project.id === Number(button.dataset.id));
-        button.setAttribute("aria-pressed", String(selected));
-        button.textContent = selected ? "Прибрати з обраного" : "Обрати проєкт";
-    });
+    syncProjectButtons();
     renderCartItems();
     renderFavorites();
     dragStatus.textContent = "";
+    updateRequestSummary();
 }
 
 container.addEventListener("click", (event) => {
@@ -255,6 +285,7 @@ function openCartModal() {
     document.querySelectorAll("body > header, body > main, body > footer")
         .forEach((element) => { element.inert = true; });
     closeBtn.focus();
+    requestResult.classList.add("hidden");
 }
 
 function closeCartModal() {
@@ -274,7 +305,6 @@ closeBtn.addEventListener("click", closeCartModal);
 cartOverlay.addEventListener("click", (event) => {
     if (event.target === cartOverlay) closeCartModal();
 });
-document.getElementById("contactSelectedBtn").addEventListener("click", closeCartModal);
 document.getElementById("clearModalSelection").addEventListener("click", () => {
     selectedProjects = [];
     updateUI();
@@ -295,7 +325,7 @@ cartDialog.addEventListener("keydown", (event) => {
         closeCartModal();
     }
     if (event.key === "Tab") {
-        const controls = [...cartDialog.querySelectorAll('button:not(:disabled), a[href]')];
+        const controls = [...cartDialog.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), select:not(:disabled)')];
         const first = controls[0];
         const last = controls[controls.length - 1];
         if (event.shiftKey && document.activeElement === first) {
@@ -308,8 +338,114 @@ cartDialog.addEventListener("keydown", (event) => {
     }
 });
 
+// ЛР №15: нормалізація, FormData, валідація та локальний JSON заявки.
+function normalizeRequestData(formData) {
+    return {
+        name: String(formData.get("clientName") || "").trim().replace(/\s+/g, " "),
+        phone: String(formData.get("clientPhone") || "").replaceAll(/[\s()\-]/g, ""),
+        email: String(formData.get("clientEmail") || "").trim().toLowerCase(),
+        promo: String(formData.get("orderPromo") || "").trim().toUpperCase()
+    };
+}
+
+function getRequestErrors(customer) {
+    const errors = {};
+    const words = customer.name.split(" ").filter(Boolean);
+    const nameWord = /^[\p{L}][\p{L}'’ʼ-]*$/u;
+    if (words.length < 2 || customer.name.length > 120 || words.some((word) => word.length < 2 || !nameWord.test(word))) {
+        errors.clientName = "Введіть ім’я та прізвище: щонайменше два слова від двох літер.";
+    }
+    if (!/^\+?380\d{9}$/.test(customer.phone)) {
+        errors.clientPhone = "Введіть номер у форматі +380XXXXXXXXX.";
+    }
+    if (customer.email.length > 254 || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customer.email)) {
+        errors.clientEmail = "Введіть коректну пошту, наприклад user@example.com.";
+    }
+    return errors;
+}
+
+const errorFields = { clientName: "nameError", clientPhone: "phoneError", clientEmail: "emailError" };
+function showRequestErrors(errors) {
+    Object.entries(errorFields).forEach(([field, errorId]) => {
+        document.getElementById(errorId).textContent = errors[field] || "";
+        document.getElementById(field).setAttribute("aria-invalid", String(Boolean(errors[field])));
+    });
+}
+
+function calculateRequestSummary(projects, promo) {
+    const count = projects.reduce((sum) => sum + 1, 0);
+    const subtotal = projects.reduce((sum) => sum + DEMO_PROJECT_PRICE, 0);
+    const discountPercent = promo === "SALE10" ? 10 : 0;
+    const discountAmount = Math.round(subtotal * discountPercent) / 100;
+    return { count, subtotal, discountPercent, discountAmount, totalToPay: Number(Math.max(0, subtotal - discountAmount).toFixed(2)) };
+}
+
+function updateRequestSummary() {
+    const promo = promoInput.value.trim().toUpperCase();
+    const summary = calculateRequestSummary(selectedProjects, promo);
+    document.getElementById("requestSubtotal").textContent = summary.subtotal.toFixed(2);
+    document.getElementById("requestDiscount").textContent = summary.discountAmount.toFixed(2);
+    document.getElementById("requestTotal").textContent = summary.totalToPay.toFixed(2);
+    document.getElementById("promoStatus").textContent = promo
+        ? (summary.discountPercent ? "SALE10: навчальну знижку 10% застосовано." : "Промокод не розпізнано. Знижку не застосовано.") : "";
+    document.getElementById("orderError").textContent = "";
+    return summary;
+}
+
+function buildRequestData(customer, projects) {
+    return {
+        type: "portfolio_inquiry_demo",
+        customer: { name: customer.name, phone: customer.phone, email: customer.email },
+        items: projects.map((project) => ({
+            id: project.id, title: project.title, url: project.url,
+            quantity: 1, demoPrice: DEMO_PROJECT_PRICE, demoCost: DEMO_PROJECT_PRICE
+        })),
+        pricingMode: "educational_example_not_service_price",
+        unit: "умовні одиниці",
+        promoCode: customer.promo || null,
+        ...calculateRequestSummary(projects, customer.promo),
+        createdAt: new Date().toISOString()
+    };
+}
+
+promoInput.addEventListener("input", updateRequestSummary);
+orderForm.addEventListener("input", (event) => {
+    const errorId = errorFields[event.target.id];
+    if (errorId) {
+        document.getElementById(errorId).textContent = "";
+        event.target.setAttribute("aria-invalid", "false");
+    }
+});
+
+orderForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const customer = normalizeRequestData(new FormData(orderForm));
+    const errors = getRequestErrors(customer);
+    showRequestErrors(errors);
+    if (Object.keys(errors).length) {
+        document.getElementById(Object.keys(errors)[0]).focus();
+        return;
+    }
+    if (selectedProjects.length === 0) {
+        document.getElementById("orderError").textContent = "Спочатку оберіть хоча б один проєкт.";
+        return;
+    }
+    const requestData = buildRequestData(customer, selectedProjects);
+    // Навчальний результат лише у поточному браузері; запиту на сервер немає.
+    console.log("Заявку сформовано локально (JSON Payload):", JSON.stringify(requestData, null, 2));
+    selectedProjects = [];
+    orderForm.reset();
+    showRequestErrors({});
+    updateUI();
+    closeCartModal();
+    requestResult.textContent = `Дякуємо, ${customer.name}! Заявку сформовано локально. Проєктів: ${requestData.count}. Навчальний підсумок: ${requestData.totalToPay.toFixed(2)} ум. од. Дані нікуди не надіслано.`;
+    requestResult.classList.remove("hidden");
+    requestResult.focus();
+});
+
 updateUI();
 initProjects();
+
 
 
 
