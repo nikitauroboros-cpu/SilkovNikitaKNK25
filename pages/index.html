@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сілков Нікіта - Особистий сайт</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=14">
 </head>
 
 <body>
@@ -60,6 +60,12 @@
             <p class="section-note">Публічні репозиторії автоматично завантажуються з мого GitHub. На картках — аватар автора, назва, опис і основна мова проєкту.</p>
 
             <p class="section-note">Оберіть проєкти, які вас зацікавили. Повторне натискання скасовує вибір.</p>
+            <section class="favorites-zone" id="favoritesZone" aria-labelledby="favoritesTitle">
+                <h3 id="favoritesTitle">Улюблені проєкти</h3>
+                <p>Перетягніть сюди картку проєкту. Або натисніть «Обрати проєкт» на картці.</p>
+                <ul class="favorites-list" id="favoritesList"></ul>
+                <p id="dragStatus" role="status" aria-live="polite"></p>
+            </section>
             <div class="loader-container" id="loader" role="status">
                 <div class="spinner" aria-hidden="true"></div>
                 <p>Завантаження проєктів з GitHub...</p>
@@ -138,9 +144,10 @@
     </section>
 </div>
 
-<script src="../assets/js/main.js?v=13" type="module"></script>
+<script src="../assets/js/main.js?v=14" type="module"></script>
 </body>
 </html>
+
 
 
 
