@@ -1,179 +1,147 @@
-const skills = [
-    {
-        "id": 1,
-        "title": "HTML",
-        "category": "html",
-        "image": "https://picsum.photos/400/260?random=11",
-        "description": "Вивчаю створення структурованих веб-сторінок та правильну семантичну розмітку.",
-        "level": "Початковий рівень",
-        "alt": "Випадкове зображення для HTML",
-        "srcset": "https://picsum.photos/400/260?random=11 400w, https://picsum.photos/800/520?random=11 800w",
-        "sizes": "(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 400px"
-    },
-    {
-        "id": 2,
-        "title": "CSS",
-        "category": "css",
-        "image": "https://picsum.photos/400/260?random=22",
-        "description": "Освоюю стилізацію сайтів, роботу з кольорами, відступами, шрифтами та Flexbox.",
-        "level": "У процесі вивчення",
-        "alt": "Випадкове зображення для CSS"
-    },
-    {
-        "id": 3,
-        "title": "Веб-дизайн",
-        "category": "design",
-        "image": "https://picsum.photos/400/260?random=33",
-        "description": "Прагну створювати охайні та зручні інтерфейси, які добре виглядають на різних екранах.",
-        "level": "Практичні роботи",
-        "alt": "Випадкове зображення для веб-дизайну"
-    },
-    {
-        "id": 4,
-        "title": "Адаптивна верстка",
-        "category": "responsive",
-        "image": "https://picsum.photos/400/260?random=44",
-        "description": "Навчаюсь будувати сторінки, де блоки переносяться та коректно перебудовуються при зміні ширини екрана.",
-        "level": "CSS Grid layout",
-        "alt": "Випадкове зображення для адаптивної верстки"
-    },
-    {
-        "id": 5,
-        "title": "HTML-форми",
-        "category": "html",
-        "image": "https://picsum.photos/400/260?random=55",
-        "description": "Створення форм входу та реєстрації з перевіркою введених даних.",
-        "alt": "Випадкове зображення для HTML-форм",
-        "level": "Практикую"
-    },
-    {
-        "id": 6,
-        "title": "CSS-анімації",
-        "category": "css",
-        "image": "https://picsum.photos/400/260?random=66",
-        "description": "Плавні переходи, ефекти наведення та анімації елементів сторінки.",
-        "alt": "Випадкове зображення для CSS-анімацій",
-        "level": "Практикую"
-    },
-    {
-        "id": 7,
-        "title": "Дизайн інтерфейсів",
-        "category": "design",
-        "image": "https://picsum.photos/400/260?random=77",
-        "description": "Підбір кольорів, типографіки та зручного розташування елементів.",
-        "alt": "Випадкове зображення для дизайну інтерфейсів",
-        "level": "Практикую"
-    },
-    {
-        "id": 8,
-        "title": "Адаптивна сторінка",
-        "category": "responsive",
-        "image": "https://picsum.photos/400/260?random=88",
-        "description": "Верстка сторінки для телефонів, планшетів і великих екранів.",
-        "alt": "Випадкове зображення для адаптивної сторінки",
-        "level": "Практикую"
-    }
-];
-
+// ЛР №13: справжній HTTP GET-запит замість локального масиву й таймера.
+const PROJECTS_API = "https://api.github.com/users/nikitauroboros-cpu/repos?type=owner&sort=updated&per_page=8";
 const container = document.querySelector(".products-grid");
-let selectedSkills = [];
+const retryButton = document.getElementById("retryProjects");
+let globalStoreProjects = [];
+let selectedProjects = [];
 
-function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+// Дані зовнішнього API вставляємо в шаблони тільки після екранування.
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[character]);
 }
 
-async function fetchSkills() {
-    await delay(2000);
-    if (new URLSearchParams(window.location.search).get("loadError") === "1") {
-        throw new Error("Не вдалося завантажити навички. Оновіть сторінку та спробуйте ще раз.");
+function githubURL(value, hostname) {
+    try {
+        const url = new URL(value);
+        return url.protocol === "https:" && url.hostname === hostname ? url.href : "";
+    } catch {
+        return "";
     }
-    return skills;
 }
 
-async function initSkills() {
+async function fetchProjects() {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+        const response = await fetch(PROJECTS_API, {
+            headers: { Accept: "application/vnd.github+json" },
+            signal: controller.signal
+        });
+        if (!response.ok) {
+            if (response.status === 403 || response.status === 429) {
+                throw new Error("GitHub тимчасово обмежив кількість запитів. Спробуйте пізніше.");
+            }
+            throw new Error(`Не вдалося завантажити проєкти. HTTP ${response.status}.`);
+        }
+        const repositories = await response.json();
+        if (!Array.isArray(repositories)) {
+            throw new Error("GitHub повернув неочікуваний формат даних.");
+        }
+        return repositories.filter((repo) => Number.isSafeInteger(repo.id) && typeof repo.name === "string")
+            .map((repo) => ({
+                id: repo.id,
+                title: repo.name,
+                description: typeof repo.description === "string" && repo.description.trim()
+                    ? repo.description : "Навчальний проєкт. Деталі та вихідний код доступні на GitHub.",
+                level: typeof repo.language === "string" ? repo.language : "Мову не визначено",
+                image: githubURL(repo.owner?.avatar_url, "avatars.githubusercontent.com"),
+                alt: `Автор проєкту ${repo.name}`,
+                url: githubURL(repo.html_url, "github.com")
+            }));
+    } catch (error) {
+        console.error("Помилка завантаження проєктів:", error);
+        if (error.name === "AbortError") {
+            throw new Error("GitHub не відповів вчасно. Спробуйте ще раз.");
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+async function initProjects() {
     const loader = document.getElementById("loader");
     loader.classList.remove("hidden");
-    container.innerHTML = "";
+    retryButton.classList.add("hidden");
+    retryButton.disabled = true;
+    container.replaceChildren();
     container.setAttribute("aria-busy", "true");
-
     try {
-        const data = await fetchSkills();
-        container.innerHTML = data
-            .map((skill) => `
-                <article class="product-card">
-                    <img class="product-img" src="${skill.image}"
-                        ${skill.srcset ? `srcset="${skill.srcset}" sizes="${skill.sizes}"` : ""}
-                        width="400" height="260" alt="${skill.alt}" loading="lazy">
-                    <h3 class="product-title">${skill.title}</h3>
-                    <p class="product-desc">${skill.description}</p>
-                    <span class="product-price">${skill.level}</span>
-                    <button class="btn-buy" type="button" data-id="${skill.id}" aria-pressed="false">Обрати навичку</button>
-                </article>
-            `)
-            .join("");
+        const data = await fetchProjects();
+        globalStoreProjects = data;
+        container.innerHTML = data.length ? data.map((project) => `
+            <article class="product-card">
+                ${project.image ? `<img class="product-img" src="${escapeHTML(project.image)}"
+                    width="400" height="260" alt="${escapeHTML(project.alt)}" loading="lazy">` : ""}
+                <h3 class="product-title">${escapeHTML(project.title)}</h3>
+                <p class="product-desc">${escapeHTML(project.description)}</p>
+                <span class="product-price">${escapeHTML(project.level)}</span>
+                ${project.url ? `<p><a href="${escapeHTML(project.url)}" target="_blank" rel="noopener noreferrer">Переглянути на GitHub ↗</a></p>` : ""}
+                <button class="btn-buy" type="button" data-id="${project.id}" aria-pressed="false">Обрати проєкт</button>
+            </article>
+        `).join("") : '<p class="section-note">Публічних проєктів поки немає.</p>';
         updateUI();
     } catch (error) {
         const message = document.createElement("p");
         message.className = "load-error";
         message.setAttribute("role", "alert");
-        message.textContent = error.message;
+        message.textContent = error instanceof TypeError || error instanceof SyntaxError
+            ? "Не вдалося отримати дані з GitHub. Перевірте інтернет і спробуйте ще раз."
+            : error.message;
         container.replaceChildren(message);
+        retryButton.classList.remove("hidden");
     } finally {
         loader.classList.add("hidden");
         container.setAttribute("aria-busy", "false");
+        retryButton.disabled = false;
     }
 }
 
-function toggleSkill(id) {
-    const skill = skills.find((item) => item.id === id);
-    if (!skill) return;
-
-    const existingSkill = selectedSkills.find((item) => item.id === id);
-    if (existingSkill) {
-        selectedSkills = selectedSkills.filter((item) => item.id !== id);
+function toggleProject(id) {
+    // Пошук у завантаженому глобальному стані, а не в старому масиві навичок.
+    const project = globalStoreProjects.find((item) => item.id === id);
+    if (!project) return;
+    if (selectedProjects.some((item) => item.id === id)) {
+        selectedProjects = selectedProjects.filter((item) => item.id !== id);
     } else {
-        selectedSkills.push({ ...skill });
+        selectedProjects.push({ ...project });
     }
-
     updateUI();
 }
 
 function calculateTotal() {
-    return selectedSkills.reduce((total) => total + 1, 0);
+    return selectedProjects.reduce((total) => total + 1, 0);
 }
 
 function updateUI() {
     const total = calculateTotal();
     document.querySelector(".selection-counter").textContent = total;
-    document.querySelector("#selection-summary").textContent = total
-        ? `Обрано навичок: ${total}. ${selectedSkills.map((skill) => skill.title).join(", ")}.`
-        : "Поки нічого не обрано. Позначте навички, які вас зацікавили.";
-    document.querySelector("#clear-selection").disabled = total === 0;
-
+    document.getElementById("selection-summary").textContent = total
+        ? `Обрано проєктів: ${total}. ${selectedProjects.map((project) => project.title).join(", ")}.`
+        : "Поки нічого не обрано. Позначте проєкти, які вас зацікавили.";
+    document.getElementById("clear-selection").disabled = total === 0;
     container.querySelectorAll(".btn-buy").forEach((button) => {
-        const selected = selectedSkills.some((skill) => skill.id === Number(button.dataset.id));
+        const selected = selectedProjects.some((project) => project.id === Number(button.dataset.id));
         button.setAttribute("aria-pressed", String(selected));
-        button.textContent = selected ? "Прибрати з обраного" : "Обрати навичку";
+        button.textContent = selected ? "Прибрати з обраного" : "Обрати проєкт";
     });
-
     renderCartItems();
-
-    console.log("Обрані навички:", selectedSkills);
-    console.log("Кількість обраних навичок:", total);
 }
 
 container.addEventListener("click", (event) => {
     const button = event.target.closest(".btn-buy");
     if (!button || !container.contains(button)) return;
-    toggleSkill(Number(button.dataset.id));
+    toggleProject(Number(button.dataset.id));
 });
-
-document.querySelector("#clear-selection").addEventListener("click", () => {
-    selectedSkills = [];
+document.getElementById("clear-selection").addEventListener("click", () => {
+    selectedProjects = [];
     updateUI();
 });
+retryButton.addEventListener("click", initProjects);
 
-// Модальне вікно використовує той самий selectedSkills, що й картки.
+// Модальне вікно використовує той самий selectedProjects, що й картки.
 const cartButton = document.querySelector(".btn-cart");
 const cartOverlay = document.getElementById("cartOverlay");
 const cartDialog = document.getElementById("cartDialog");
@@ -183,21 +151,21 @@ let closeTimer;
 let lastFocusedElement;
 
 function renderCartItems() {
-    cartItemsContainer.innerHTML = selectedSkills.length
-        ? selectedSkills.map((skill) => `
+    cartItemsContainer.innerHTML = selectedProjects.length
+        ? selectedProjects.map((project) => `
             <article class="cart-item">
-                <img src="${skill.image}" alt="${skill.alt}" width="64" height="48">
+                ${project.image ? `<img src="${escapeHTML(project.image)}" alt="${escapeHTML(project.alt)}" width="64" height="48">` : ""}
                 <div class="cart-item-info">
-                    <h3>${skill.title}</h3>
-                    <p>${skill.level}</p>
+                    <h3>${escapeHTML(project.title)}</h3>
+                    <p>${escapeHTML(project.level)}</p>
                 </div>
-                <button class="btn" type="button" data-remove-id="${skill.id}"
-                    aria-label="Прибрати ${skill.title} з обраного">Прибрати</button>
+                <button class="btn" type="button" data-remove-id="${project.id}"
+                    aria-label="Прибрати ${escapeHTML(project.title)} з обраного">Прибрати</button>
             </article>
         `).join("")
-        : '<p class="section-note">Поки нічого не обрано. Оберіть навички у портфоліо.</p>';
+        : '<p class="section-note">Поки нічого не обрано. Оберіть проєкти у портфоліо.</p>';
     document.getElementById("cartTotalSum").textContent = calculateTotal();
-    document.getElementById("clearModalSelection").disabled = selectedSkills.length === 0;
+    document.getElementById("clearModalSelection").disabled = selectedProjects.length === 0;
 }
 
 function openCartModal() {
@@ -234,7 +202,7 @@ cartOverlay.addEventListener("click", (event) => {
 });
 document.getElementById("contactSelectedBtn").addEventListener("click", closeCartModal);
 document.getElementById("clearModalSelection").addEventListener("click", () => {
-    selectedSkills = [];
+    selectedProjects = [];
     updateUI();
     closeBtn.focus();
 });
@@ -242,8 +210,8 @@ cartItemsContainer.addEventListener("click", (event) => {
     const button = event.target.closest("[data-remove-id]");
     if (!button || !cartItemsContainer.contains(button)) return;
     const id = Number(button.dataset.removeId);
-    const index = selectedSkills.findIndex((skill) => skill.id === id);
-    toggleSkill(id);
+    const index = selectedProjects.findIndex((project) => project.id === id);
+    toggleProject(id);
     const buttons = cartItemsContainer.querySelectorAll("[data-remove-id]");
     (buttons[Math.min(index, buttons.length - 1)] || closeBtn).focus();
 });
@@ -267,5 +235,6 @@ cartDialog.addEventListener("keydown", (event) => {
 });
 
 updateUI();
-initSkills();
+initProjects();
+
 
