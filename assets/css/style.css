@@ -741,3 +741,37 @@ button:disabled { opacity: 0.5; cursor: default; }
 .request-totals { display: grid; gap: 0.5rem; }
 .request-totals > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; }
 .request-result { padding: 1rem; border-radius: 8px; background: #dcfce7; color: #14532d; }
+
+
+/* ЛР №16 — темна палітра та пам’ять інтерфейсу */
+:root.dark-theme {
+    --bg-color: #1f2937;
+    --text-color: #f3f4f6;
+    --muted-color: #cbd5e1;
+    --card-border: #475569;
+    --page-bg: #0b1220;
+    color-scheme: dark;
+}
+.btn-theme {
+    white-space: nowrap;
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--card-border);
+}
+.btn-theme:hover, .btn-theme:focus-visible { background: var(--page-bg); }
+.storage-notice:not(:empty) { padding: 0.75rem 5%; background: var(--bg-color); color: var(--text-color); }
+:root.dark-theme .logo, :root.dark-theme .product-price,
+:root.dark-theme .auth-links a { color: #93c5fd; }
+:root.dark-theme .favorites-zone { background: #17233a; border-color: #60a5fa; }
+:root.dark-theme .favorites-zone.drag-over { background: #213b62; }
+:root.dark-theme .form-group input,
+:root.dark-theme .form-group select,
+:root.dark-theme .form-group textarea,
+:root.dark-theme .search-bar input,
+:root.dark-theme .subscribe-form input {
+    background: #111827;
+    color: var(--text-color);
+}
+:root.dark-theme input::placeholder { color: #9ca3af; }
+:root.dark-theme .input-error, :root.dark-theme .load-error { color: #fca5a5; }
+:root.dark-theme .request-result { background: #123a29; color: #bbf7d0; }
