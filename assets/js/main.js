@@ -156,6 +156,8 @@ function updateUI() {
         button.textContent = selected ? "Прибрати з обраного" : "Обрати навичку";
     });
 
+    renderCartItems();
+
     console.log("Обрані навички:", selectedSkills);
     console.log("Кількість обраних навичок:", total);
 }
@@ -171,5 +173,99 @@ document.querySelector("#clear-selection").addEventListener("click", () => {
     updateUI();
 });
 
+// Модальне вікно використовує той самий selectedSkills, що й картки.
+const cartButton = document.querySelector(".btn-cart");
+const cartOverlay = document.getElementById("cartOverlay");
+const cartDialog = document.getElementById("cartDialog");
+const closeBtn = document.getElementById("closeCartBtn");
+const cartItemsContainer = document.getElementById("cartItemsContainer");
+let closeTimer;
+let lastFocusedElement;
+
+function renderCartItems() {
+    cartItemsContainer.innerHTML = selectedSkills.length
+        ? selectedSkills.map((skill) => `
+            <article class="cart-item">
+                <img src="${skill.image}" alt="${skill.alt}" width="64" height="48">
+                <div class="cart-item-info">
+                    <h3>${skill.title}</h3>
+                    <p>${skill.level}</p>
+                </div>
+                <button class="btn" type="button" data-remove-id="${skill.id}"
+                    aria-label="Прибрати ${skill.title} з обраного">Прибрати</button>
+            </article>
+        `).join("")
+        : '<p class="section-note">Поки нічого не обрано. Оберіть навички у портфоліо.</p>';
+    document.getElementById("cartTotalSum").textContent = calculateTotal();
+    document.getElementById("clearModalSelection").disabled = selectedSkills.length === 0;
+}
+
+function openCartModal() {
+    clearTimeout(closeTimer);
+    lastFocusedElement = document.activeElement;
+    renderCartItems();
+    cartOverlay.classList.remove("hidden");
+    // Фіксуємо початкову прозорість перед запуском CSS-переходу.
+    void cartOverlay.offsetWidth;
+    cartOverlay.classList.add("is-visible");
+    document.body.classList.add("modal-open");
+    cartButton.setAttribute("aria-expanded", "true");
+    document.querySelectorAll("body > header, body > main, body > footer")
+        .forEach((element) => { element.inert = true; });
+    closeBtn.focus();
+}
+
+function closeCartModal() {
+    cartOverlay.classList.remove("is-visible");
+    cartButton.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("modal-open");
+    document.querySelectorAll("body > header, body > main, body > footer")
+        .forEach((element) => { element.inert = false; });
+    (lastFocusedElement || cartButton).focus();
+    // display: none додається після завершення переходу opacity.
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 300;
+    closeTimer = setTimeout(() => cartOverlay.classList.add("hidden"), duration);
+}
+
+cartButton.addEventListener("click", openCartModal);
+closeBtn.addEventListener("click", closeCartModal);
+cartOverlay.addEventListener("click", (event) => {
+    if (event.target === cartOverlay) closeCartModal();
+});
+document.getElementById("contactSelectedBtn").addEventListener("click", closeCartModal);
+document.getElementById("clearModalSelection").addEventListener("click", () => {
+    selectedSkills = [];
+    updateUI();
+    closeBtn.focus();
+});
+cartItemsContainer.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-id]");
+    if (!button || !cartItemsContainer.contains(button)) return;
+    const id = Number(button.dataset.removeId);
+    const index = selectedSkills.findIndex((skill) => skill.id === id);
+    toggleSkill(id);
+    const buttons = cartItemsContainer.querySelectorAll("[data-remove-id]");
+    (buttons[Math.min(index, buttons.length - 1)] || closeBtn).focus();
+});
+cartDialog.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeCartModal();
+    }
+    if (event.key === "Tab") {
+        const controls = [...cartDialog.querySelectorAll('button:not(:disabled), a[href]')];
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+});
+
 updateUI();
 initSkills();
+
