@@ -21,8 +21,8 @@
     <nav class="main-nav" aria-label="Основна навігація">
         <ul class="nav-list">
             <li><a href="index.html">Головна</a></li>
-            <li><a href="#skills">Про мене</a></li>
-            <li><a href="#skills">Проєкти</a></li>
+            <li><a href="#about">Про мене</a></li>
+            <li><a href="#projects">Проєкти</a></li>
             <li><a href="#contacts">Контакти</a></li>
             <li><a href="login.html">Вхід</a></li>
             <li><a href="register.html">Реєстрація</a></li>
@@ -40,35 +40,35 @@
 
 <main class="page-layout">
     <aside class="sidebar">
-        <h3>Фільтри</h3>
+        <h3>Мій GitHub</h3>
         <ul class="filters-list">
-            <li><label><input type="checkbox"> HTML</label></li>
-            <li><label><input type="checkbox"> CSS</label></li>
-            <li><label><input type="checkbox"> Дизайн</label></li>
-            <li><label><input type="checkbox"> Адаптив</label></li>
+            <li><a href="https://github.com/nikitauroboros-cpu" target="_blank" rel="noopener noreferrer">Профіль на GitHub ↗</a></li>
+            <li><a href="#projects">Мої проєкти</a></li>
+            <li><a href="#selected-projects">Обрані проєкти</a></li>
         </ul>
     </aside>
 
     <section class="products-content">
-        <section class="hero">
+        <section class="hero" id="about">
             <h1>Ласкаво прошу на мій сайт</h1>
             <p>Це моя особиста веб-сторінка. Тут ви можете знайти інформацію про мене, мої навички та способи зв'язку.</p>
-            <a class="btn" href="#skills">Дізнатися більше</a>
+            <a class="btn" href="#projects">Дізнатися більше</a>
         </section>
 
-        <section class="skills-section" id="skills">
-            <h2>Мої навички</h2>
-            <p class="section-note">У картках використовуються випадкові зображення, які завантажуються з онлайн-сервісу при відкритті сторінки.</p>
+        <section class="skills-section" id="projects">
+            <h2>Мої проєкти</h2>
+            <p class="section-note">Публічні репозиторії автоматично завантажуються з мого GitHub. На картках — аватар автора, назва, опис і основна мова проєкту.</p>
 
-            <p class="section-note">Оберіть навички, які вас зацікавили. Повторне натискання скасовує вибір.</p>
+            <p class="section-note">Оберіть проєкти, які вас зацікавили. Повторне натискання скасовує вибір.</p>
             <div class="loader-container" id="loader" role="status">
                 <div class="spinner" aria-hidden="true"></div>
-                <p>Завантаження навичок...</p>
+                <p>Завантаження проєктів з GitHub...</p>
             </div>
             <div class="products-grid" aria-busy="true"></div>
+            <button class="btn hidden" id="retryProjects" type="button">Спробувати ще раз</button>
         </section>
-        <section class="hero" id="selected-skills" aria-labelledby="selection-title">
-            <h2 id="selection-title">Обрані навички</h2>
+        <section class="hero" id="selected-projects" aria-labelledby="selection-title">
+            <h2 id="selection-title">Обрані проєкти</h2>
             <p id="selection-summary" role="status" aria-live="polite">Поки нічого не обрано.</p>
             <button class="btn" id="clear-selection" type="button" disabled>Очистити обране</button>
             <a class="btn" href="#contacts">Зв’язатися зі мною</a>
@@ -119,27 +119,28 @@
     </form>
 </footer>
 
-<!-- ЛР №12: модальне вікно обраних навичок портфоліо. -->
+<!-- ЛР №12: модальне вікно обраних проєктів портфоліо. -->
 <div class="modal-overlay hidden" id="cartOverlay">
     <section class="modal-window" id="cartDialog" role="dialog" aria-modal="true"
         aria-labelledby="cartTitle" tabindex="-1">
         <div class="modal-header">
-            <h2 id="cartTitle">Обрані навички</h2>
+            <h2 id="cartTitle">Обрані проєкти</h2>
             <button class="close-btn" id="closeCartBtn" type="button" aria-label="Закрити обране">&times;</button>
         </div>
         <div class="cart-items" id="cartItemsContainer">
-            <p class="section-note">Поки нічого не обрано. Оберіть навички у портфоліо.</p>
+            <p class="section-note">Поки нічого не обрано. Оберіть проєкти у портфоліо.</p>
         </div>
         <div class="modal-footer">
-            <p role="status" aria-live="polite">Разом навичок: <strong id="cartTotalSum">0</strong></p>
+            <p role="status" aria-live="polite">Разом проєктів: <strong id="cartTotalSum">0</strong></p>
             <button class="btn" id="clearModalSelection" type="button" disabled>Очистити обране</button>
             <a class="btn" id="contactSelectedBtn" href="#contacts">Зв’язатися зі мною</a>
         </div>
     </section>
 </div>
 
-<script src="../assets/js/main.js" type="module"></script>
+<script src="../assets/js/main.js?v=13" type="module"></script>
 </body>
 </html>
+
 
 
