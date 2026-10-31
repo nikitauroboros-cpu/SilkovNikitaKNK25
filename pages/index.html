@@ -30,10 +30,10 @@
     </nav>
 
     <div class="user-actions">
-        <a class="btn btn-cart" href="#selected-skills">
+        <button class="btn btn-cart" type="button" aria-haspopup="dialog" aria-controls="cartDialog" aria-expanded="false">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h12v18l-6-4-6 4V3Z"/></svg>
             Обране (<span class="selection-counter">0</span>)
-        </a>
+        </button>
         <a class="btn btn-header" href="#contacts">Написати</a>
     </div>
 </header>
@@ -119,7 +119,27 @@
     </form>
 </footer>
 
+<!-- ЛР №12: модальне вікно обраних навичок портфоліо. -->
+<div class="modal-overlay hidden" id="cartOverlay">
+    <section class="modal-window" id="cartDialog" role="dialog" aria-modal="true"
+        aria-labelledby="cartTitle" tabindex="-1">
+        <div class="modal-header">
+            <h2 id="cartTitle">Обрані навички</h2>
+            <button class="close-btn" id="closeCartBtn" type="button" aria-label="Закрити обране">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItemsContainer">
+            <p class="section-note">Поки нічого не обрано. Оберіть навички у портфоліо.</p>
+        </div>
+        <div class="modal-footer">
+            <p role="status" aria-live="polite">Разом навичок: <strong id="cartTotalSum">0</strong></p>
+            <button class="btn" id="clearModalSelection" type="button" disabled>Очистити обране</button>
+            <a class="btn" id="contactSelectedBtn" href="#contacts">Зв’язатися зі мною</a>
+        </div>
+    </section>
+</div>
+
 <script src="../assets/js/main.js" type="module"></script>
 </body>
 </html>
+
 
