@@ -718,3 +718,26 @@ button:disabled { opacity: 0.5; cursor: default; }
 }
 .fav-item span { color: var(--muted-color); }
 #dragStatus:not(:empty) { margin-top: 0.75rem; }
+
+
+/* ЛР №15 — живий пошук і форма заявки у модальному вікні */
+.search-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.search-bar label { font-weight: 700; }
+.search-bar input {
+    width: min(320px, 100%);
+    padding: 0.75rem;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    font: inherit;
+}
+#searchResultCount { color: var(--muted-color); }
+.inquiry-form { width: 100%; margin-top: 1rem; }
+.inquiry-form h3, .inquiry-form > p { margin-bottom: 1rem; }
+.input-error { color: #b91c1c; font-size: 0.9rem; }
+.inquiry-form input[aria-invalid="true"] { border-color: #b91c1c; }
+.inquiry-form input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12); }
+.demo-estimate { margin-bottom: 1rem; }
+.demo-estimate > p { margin-bottom: 1rem; }
+.request-totals { display: grid; gap: 0.5rem; }
+.request-totals > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; }
+.request-result { padding: 1rem; border-radius: 8px; background: #dcfce7; color: #14532d; }
