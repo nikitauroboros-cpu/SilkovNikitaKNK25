@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сілков Нікіта - Особистий сайт</title>
-    <link rel="stylesheet" href="../assets/css/style.css?v=15">
+    <!-- ЛР №16: тема до CSS, щоб уникнути білого спалаху. -->
+    <script>
+    (() => {
+        const key = "silkov_portfolio_theme";
+        const media = window.matchMedia("(prefers-color-scheme: dark)");
+        const applySavedTheme = () => {
+            let saved = null;
+            try { saved = localStorage.getItem(key); } catch { /* Системна тема без доступу до сховища. */ }
+            const dark = saved === "dark" || (saved !== "light" && media.matches);
+            document.documentElement.classList.toggle("dark-theme", dark);
+            document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        };
+        applySavedTheme();
+        window.addEventListener("storage", (event) => {
+            if (event.key === key || event.key === null) applySavedTheme();
+        });
+        media.addEventListener("change", applySavedTheme);
+    })();
+    </script>
+    <link rel="stylesheet" href="../assets/css/style.css?v=16">
 </head>
 
 <body>
@@ -30,6 +49,7 @@
     </nav>
 
     <div class="user-actions">
+        <button class="btn btn-theme" id="themeToggleBtn" type="button" aria-pressed="false" aria-label="Увімкнути темну тему">☾ Темна тема</button>
         <button class="btn btn-cart" type="button" aria-haspopup="dialog" aria-controls="cartDialog" aria-expanded="false">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h12v18l-6-4-6 4V3Z"/></svg>
             Обране (<span class="selection-counter">0</span>)
@@ -38,6 +58,7 @@
     </div>
 </header>
 
+<p class="storage-notice" id="storageNotice" role="status" aria-live="polite"></p>
 <main class="page-layout">
     <aside class="sidebar">
         <h3>Мій GitHub</h3>
@@ -147,7 +168,7 @@
             <button class="btn" id="clearModalSelection" type="button" disabled>Очистити обране</button>
             <form id="checkoutOrderForm" class="inquiry-form" novalidate aria-labelledby="requestTitle">
                 <h3 id="requestTitle">Заявка щодо обраних проєктів</h3>
-                <p class="section-note" id="requestNote">Навчальна форма: заявка формується лише у вашому браузері й нікуди не надсилається.</p>
+                <p class="section-note" id="requestNote">Навчальна форма: заявка нікуди не надсилається. Чернетка зберігається у цій вкладці до її закриття та очищається після формування заявки.</p>
                 <div class="form-group">
                     <label for="clientName">Ім’я та прізвище</label>
                     <input id="clientName" name="clientName" type="text" autocomplete="name" maxlength="120" required aria-describedby="nameError">
@@ -184,9 +205,10 @@
     </section>
 </div>
 
-<script src="../assets/js/main.js?v=15" type="module"></script>
+<script src="../assets/js/main.js?v=16" type="module"></script>
 </body>
 </html>
+
 
 
 

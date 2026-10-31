@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- ЛР №16: тема до CSS, щоб уникнути білого спалаху. -->
+    <script>
+    (() => {
+        const key = "silkov_portfolio_theme";
+        const media = window.matchMedia("(prefers-color-scheme: dark)");
+        const applySavedTheme = () => {
+            let saved = null;
+            try { saved = localStorage.getItem(key); } catch { /* Системна тема без доступу до сховища. */ }
+            const dark = saved === "dark" || (saved !== "light" && media.matches);
+            document.documentElement.classList.toggle("dark-theme", dark);
+            document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        };
+        applySavedTheme();
+        window.addEventListener("storage", (event) => {
+            if (event.key === key || event.key === null) applySavedTheme();
+        });
+        media.addEventListener("change", applySavedTheme);
+    })();
+    </script>
+    <link rel="stylesheet" href="../assets/css/style.css?v=16">
 </head>
 <body>
 <header class="header">
@@ -25,7 +44,7 @@
     </nav>
 
     <div class="user-actions">
-        <a class="btn btn-cart" href="index.html#selected-skills">
+        <a class="btn btn-cart" href="index.html#selected-projects">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h12v18l-6-4-6 4V3Z"/></svg>
             Обране
         </a>
@@ -148,3 +167,4 @@
 </footer>
 </body>
 </html>
+
