@@ -3,7 +3,10 @@ const PROJECTS_API = "https://api.github.com/users/nikitauroboros-cpu/repos?type
 const container = document.querySelector(".products-grid");
 const retryButton = document.getElementById("retryProjects");
 let globalStoreProjects = [];
-let selectedProjects = [];
+const SELECTED_STORAGE_KEY = "silkov_portfolio_selected_v1";
+const THEME_STORAGE_KEY = "silkov_portfolio_theme";
+const DRAFT_STORAGE_KEY = "silkov_portfolio_draft_v1";
+let selectedProjects = loadSelectedProjects();
 const searchInput = document.getElementById("searchInput");
 const searchResultCount = document.getElementById("searchResultCount");
 const orderForm = document.getElementById("checkoutOrderForm");
@@ -11,6 +14,128 @@ const promoInput = document.getElementById("orderPromo");
 const requestResult = document.getElementById("requestResult");
 // ЛР №15: умовні одиниці для демонстрації reduce() і SALE10, не ціна послуг.
 const DEMO_PROJECT_PRICE = 100;
+
+// ЛР №16: безпечна робота з власними ключами Web Storage.
+function storageNotice(message) {
+    const notice = document.getElementById("storageNotice");
+    if (notice) notice.textContent = message;
+}
+
+function readStoredJSON(storageName, key, fallback) {
+    try {
+        const raw = window[storageName].getItem(key);
+        if (raw === null) return fallback;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            window[storageName].removeItem(key);
+            storageNotice("Пошкоджений збережений запис пропущено. Сайт продовжує працювати.");
+            return fallback;
+        }
+    } catch {
+        storageNotice("Пам’ять браузера недоступна. Зміни працюватимуть у поточній сторінці.");
+        return fallback;
+    }
+}
+
+function writeStoredJSON(storageName, key, value) {
+    try {
+        window[storageName].setItem(key, JSON.stringify(value));
+        return true;
+    } catch {
+        storageNotice("Не вдалося зберегти дані: пам’ять браузера недоступна або заповнена.");
+        return false;
+    }
+}
+
+function removeStoredItem(storageName, key) {
+    try {
+        window[storageName].removeItem(key);
+    } catch {
+        storageNotice("Не вдалося очистити збережений запис. Перевірте доступ до пам’яті браузера.");
+    }
+}
+
+function loadSelectedProjects() {
+    const data = readStoredJSON("localStorage", SELECTED_STORAGE_KEY, []);
+    if (!Array.isArray(data)) return [];
+    const unique = new Map();
+    data.slice(0, 100).forEach((project) => {
+        if (!project || !Number.isSafeInteger(project.id) || project.id <= 0 || typeof project.title !== "string") return;
+        unique.set(project.id, {
+            id: project.id,
+            title: project.title.slice(0, 200),
+            description: typeof project.description === "string" ? project.description.slice(0, 2000) : "",
+            level: typeof project.level === "string" ? project.level.slice(0, 100) : "Мову не визначено",
+            image: githubURL(project.image, "avatars.githubusercontent.com"),
+            alt: typeof project.alt === "string" ? project.alt.slice(0, 250) : "Автор проєкту",
+            url: githubURL(project.url, "github.com")
+        });
+    });
+    return [...unique.values()];
+}
+
+function saveSelectedProjects() {
+    if (selectedProjects.length) writeStoredJSON("localStorage", SELECTED_STORAGE_KEY, selectedProjects);
+    else removeStoredItem("localStorage", SELECTED_STORAGE_KEY);
+}
+
+const draftFields = { clientName: 120, clientPhone: 40, clientEmail: 254, orderPromo: 32 };
+function saveOrderFormDraft() {
+    const draft = Object.fromEntries(Object.entries(draftFields).map(([id, limit]) => [id, document.getElementById(id).value.slice(0, limit)]));
+    if (Object.values(draft).some(Boolean)) writeStoredJSON("sessionStorage", DRAFT_STORAGE_KEY, draft);
+    else removeStoredItem("sessionStorage", DRAFT_STORAGE_KEY);
+}
+
+function restoreOrderFormDraft() {
+    const draft = readStoredJSON("sessionStorage", DRAFT_STORAGE_KEY, null);
+    if (!draft || typeof draft !== "object" || Array.isArray(draft)) return;
+    Object.entries(draftFields).forEach(([id, limit]) => {
+        if (typeof draft[id] === "string") document.getElementById(id).value = draft[id].slice(0, limit);
+    });
+}
+
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+function applyTheme(theme) {
+    const dark = theme === "dark";
+    document.documentElement.classList.toggle("dark-theme", dark);
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    themeToggleBtn.textContent = dark ? "☀ Світла тема" : "☾ Темна тема";
+    themeToggleBtn.setAttribute("aria-pressed", String(dark));
+    themeToggleBtn.setAttribute("aria-label", dark ? "Увімкнути світлу тему" : "Увімкнути темну тему");
+}
+
+themeToggleBtn.addEventListener("click", () => {
+    const next = document.documentElement.classList.contains("dark-theme") ? "light" : "dark";
+    applyTheme(next);
+    try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch {
+        storageNotice("Вибрану тему застосовано, але пам’ять браузера недоступна для збереження.");
+    }
+});
+
+window.addEventListener("storage", (event) => {
+    // Не зберігаємо стан повторно у відповідь на чужу зміну: без циклу подій.
+    let local;
+    try { local = window.localStorage; } catch { return; }
+    if (event.storageArea !== local) return;
+    if (event.key === SELECTED_STORAGE_KEY || event.key === null) {
+        selectedProjects = loadSelectedProjects();
+        updateUI();
+    }
+    if (event.key === THEME_STORAGE_KEY || event.key === null) {
+        let saved = null;
+        try { saved = local.getItem(THEME_STORAGE_KEY); } catch { /* Застосовуємо системну тему. */ }
+        const fallback = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        applyTheme(saved === "dark" || saved === "light" ? saved : fallback);
+    }
+});
+
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    try { if (window.localStorage.getItem(THEME_STORAGE_KEY)) return; } catch { /* Використовуємо системну тему. */ }
+    applyTheme(document.documentElement.classList.contains("dark-theme") ? "dark" : "light");
+});
 
 // Дані зовнішнього API вставляємо в шаблони тільки після екранування.
 function escapeHTML(value) {
@@ -126,14 +251,14 @@ async function initProjects() {
 
 function toggleProject(id) {
     // Пошук у завантаженому глобальному стані, а не в старому масиві навичок.
-    const project = globalStoreProjects.find((item) => item.id === id);
+    const project = globalStoreProjects.find((item) => item.id === id) || selectedProjects.find((item) => item.id === id);
     if (!project) return;
     if (selectedProjects.some((item) => item.id === id)) {
         selectedProjects = selectedProjects.filter((item) => item.id !== id);
     } else {
         selectedProjects.push({ ...project });
     }
-    updateUI();
+    updateUI({ persist: true });
 }
 
 function calculateTotal() {
@@ -148,7 +273,8 @@ function syncProjectButtons() {
     });
 }
 
-function updateUI() {
+function updateUI({ persist = false } = {}) {
+    if (persist) saveSelectedProjects();
     const total = calculateTotal();
     document.querySelector(".selection-counter").textContent = total;
     document.getElementById("selection-summary").textContent = total
@@ -169,7 +295,7 @@ container.addEventListener("click", (event) => {
 });
 document.getElementById("clear-selection").addEventListener("click", () => {
     selectedProjects = [];
-    updateUI();
+    updateUI({ persist: true });
 });
 retryButton.addEventListener("click", initProjects);
 
@@ -241,7 +367,7 @@ favoritesZone.addEventListener("drop", (event) => {
         return;
     }
     selectedProjects.push({ ...project });
-    updateUI();
+    updateUI({ persist: true });
     dragStatus.textContent = `Проєкт ${project.title} додано в улюблені.`;
 });
 
@@ -307,7 +433,7 @@ cartOverlay.addEventListener("click", (event) => {
 });
 document.getElementById("clearModalSelection").addEventListener("click", () => {
     selectedProjects = [];
-    updateUI();
+    updateUI({ persist: true });
     closeBtn.focus();
 });
 cartItemsContainer.addEventListener("click", (event) => {
@@ -410,6 +536,7 @@ function buildRequestData(customer, projects) {
 
 promoInput.addEventListener("input", updateRequestSummary);
 orderForm.addEventListener("input", (event) => {
+    saveOrderFormDraft();
     const errorId = errorFields[event.target.id];
     if (errorId) {
         document.getElementById(errorId).textContent = "";
@@ -435,16 +562,20 @@ orderForm.addEventListener("submit", (event) => {
     console.log("Заявку сформовано локально (JSON Payload):", JSON.stringify(requestData, null, 2));
     selectedProjects = [];
     orderForm.reset();
+    removeStoredItem("sessionStorage", DRAFT_STORAGE_KEY);
     showRequestErrors({});
-    updateUI();
+    updateUI({ persist: true });
     closeCartModal();
     requestResult.textContent = `Дякуємо, ${customer.name}! Заявку сформовано локально. Проєктів: ${requestData.count}. Навчальний підсумок: ${requestData.totalToPay.toFixed(2)} ум. од. Дані нікуди не надіслано.`;
     requestResult.classList.remove("hidden");
     requestResult.focus();
 });
 
+restoreOrderFormDraft();
+applyTheme(document.documentElement.classList.contains("dark-theme") ? "dark" : "light");
 updateUI();
 initProjects();
+
 
 
 
