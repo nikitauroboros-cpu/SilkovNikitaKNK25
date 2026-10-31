@@ -72,13 +72,13 @@ async function initProjects() {
         const data = await fetchProjects();
         globalStoreProjects = data;
         container.innerHTML = data.length ? data.map((project) => `
-            <article class="product-card">
-                ${project.image ? `<img class="product-img" src="${escapeHTML(project.image)}"
+            <article class="product-card" draggable="true" data-id="${project.id}">
+                ${project.image ? `<img class="product-img" draggable="false" src="${escapeHTML(project.image)}"
                     width="400" height="260" alt="${escapeHTML(project.alt)}" loading="lazy">` : ""}
                 <h3 class="product-title">${escapeHTML(project.title)}</h3>
                 <p class="product-desc">${escapeHTML(project.description)}</p>
                 <span class="product-price">${escapeHTML(project.level)}</span>
-                ${project.url ? `<p><a href="${escapeHTML(project.url)}" target="_blank" rel="noopener noreferrer">Переглянути на GitHub ↗</a></p>` : ""}
+                ${project.url ? `<p><a draggable="false" href="${escapeHTML(project.url)}" target="_blank" rel="noopener noreferrer">Переглянути на GitHub ↗</a></p>` : ""}
                 <button class="btn-buy" type="button" data-id="${project.id}" aria-pressed="false">Обрати проєкт</button>
             </article>
         `).join("") : '<p class="section-note">Публічних проєктів поки немає.</p>';
@@ -128,6 +128,8 @@ function updateUI() {
         button.textContent = selected ? "Прибрати з обраного" : "Обрати проєкт";
     });
     renderCartItems();
+    renderFavorites();
+    dragStatus.textContent = "";
 }
 
 container.addEventListener("click", (event) => {
@@ -140,6 +142,78 @@ document.getElementById("clear-selection").addEventListener("click", () => {
     updateUI();
 });
 retryButton.addEventListener("click", initProjects);
+
+// ЛР №14: делегування dragstart/dragend на постійному контейнері.
+const favoritesZone = document.getElementById("favoritesZone");
+const favoritesList = document.getElementById("favoritesList");
+const dragStatus = document.getElementById("dragStatus");
+let draggedProjectId = null;
+let draggedCard = null;
+
+function renderFavorites() {
+    favoritesList.innerHTML = selectedProjects.map((project) => `
+        <li class="fav-item">${escapeHTML(project.title)} <span>ID: ${project.id}</span></li>
+    `).join("");
+}
+
+function resetDrag() {
+    draggedCard?.classList.remove("dragging");
+    favoritesZone.classList.remove("drag-over");
+    draggedCard = null;
+    draggedProjectId = null;
+}
+
+container.addEventListener("dragstart", (event) => {
+    const card = event.target.closest(".product-card");
+    if (!card || !container.contains(card) || !event.dataTransfer) return;
+    if (event.target.closest("button, a, input")) {
+        event.preventDefault();
+        return;
+    }
+    const id = Number(card.dataset.id);
+    if (!globalStoreProjects.some((project) => project.id === id)) {
+        event.preventDefault();
+        return;
+    }
+    draggedProjectId = id;
+    draggedCard = card;
+    event.dataTransfer.setData("text/plain", String(id));
+    event.dataTransfer.effectAllowed = "copy";
+    card.classList.add("dragging");
+});
+
+container.addEventListener("dragend", resetDrag);
+
+favoritesZone.addEventListener("dragover", (event) => {
+    // Приймаємо лише картки поточного портфоліо, а не сторонні файли чи текст.
+    if (draggedProjectId === null || !event.dataTransfer) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    favoritesZone.classList.add("drag-over");
+});
+
+favoritesZone.addEventListener("dragleave", (event) => {
+    if (!favoritesZone.contains(event.relatedTarget)) {
+        favoritesZone.classList.remove("drag-over");
+    }
+});
+
+favoritesZone.addEventListener("drop", (event) => {
+    event.preventDefault();
+    const rawId = event.dataTransfer?.getData("text/plain") || "";
+    const id = /^\d+$/.test(rawId) ? Number(rawId) : NaN;
+    const project = globalStoreProjects.find((item) => item.id === id);
+    const valid = Number.isSafeInteger(id) && id === draggedProjectId && project;
+    resetDrag();
+    if (!valid) return;
+    if (selectedProjects.some((item) => item.id === id)) {
+        dragStatus.textContent = `Проєкт ${project.title} вже є в улюблених.`;
+        return;
+    }
+    selectedProjects.push({ ...project });
+    updateUI();
+    dragStatus.textContent = `Проєкт ${project.title} додано в улюблені.`;
+});
 
 // Модальне вікно використовує той самий selectedProjects, що й картки.
 const cartButton = document.querySelector(".btn-cart");
@@ -236,5 +310,6 @@ cartDialog.addEventListener("keydown", (event) => {
 
 updateUI();
 initProjects();
+
 
 
