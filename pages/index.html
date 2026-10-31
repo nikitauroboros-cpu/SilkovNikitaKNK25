@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сілков Нікіта - Особистий сайт</title>
-    <link rel="stylesheet" href="../assets/css/style.css?v=14">
+    <link rel="stylesheet" href="../assets/css/style.css?v=15">
 </head>
 
 <body>
@@ -70,11 +70,17 @@
                 <div class="spinner" aria-hidden="true"></div>
                 <p>Завантаження проєктів з GitHub...</p>
             </div>
+            <div class="search-bar">
+                <label for="searchInput">Пошук проєктів</label>
+                <input type="search" id="searchInput" placeholder="Введіть назву проєкту…" disabled>
+                <span id="searchResultCount" role="status" aria-live="polite"></span>
+            </div>
             <div class="products-grid" aria-busy="true"></div>
             <button class="btn hidden" id="retryProjects" type="button">Спробувати ще раз</button>
         </section>
         <section class="hero" id="selected-projects" aria-labelledby="selection-title">
             <h2 id="selection-title">Обрані проєкти</h2>
+            <p class="request-result hidden" id="requestResult" role="status" tabindex="-1"></p>
             <p id="selection-summary" role="status" aria-live="polite">Поки нічого не обрано.</p>
             <button class="btn" id="clear-selection" type="button" disabled>Очистити обране</button>
             <a class="btn" href="#contacts">Зв’язатися зі мною</a>
@@ -139,14 +145,49 @@
         <div class="modal-footer">
             <p role="status" aria-live="polite">Разом проєктів: <strong id="cartTotalSum">0</strong></p>
             <button class="btn" id="clearModalSelection" type="button" disabled>Очистити обране</button>
-            <a class="btn" id="contactSelectedBtn" href="#contacts">Зв’язатися зі мною</a>
+            <form id="checkoutOrderForm" class="inquiry-form" novalidate aria-labelledby="requestTitle">
+                <h3 id="requestTitle">Заявка щодо обраних проєктів</h3>
+                <p class="section-note" id="requestNote">Навчальна форма: заявка формується лише у вашому браузері й нікуди не надсилається.</p>
+                <div class="form-group">
+                    <label for="clientName">Ім’я та прізвище</label>
+                    <input id="clientName" name="clientName" type="text" autocomplete="name" maxlength="120" required aria-describedby="nameError">
+                    <span class="input-error" id="nameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="clientPhone">Телефон (+380…)</label>
+                    <input id="clientPhone" name="clientPhone" type="tel" autocomplete="tel" maxlength="40" placeholder="+38 (097) 123-45-67" required aria-describedby="phoneError">
+                    <span class="input-error" id="phoneError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">Електронна пошта</label>
+                    <input id="clientEmail" name="clientEmail" type="email" autocomplete="email" maxlength="254" required aria-describedby="emailError">
+                    <span class="input-error" id="emailError"></span>
+                </div>
+                <fieldset class="demo-estimate">
+                    <legend>Навчальний розрахунок</legend>
+                    <p class="section-note">Умовно 100 одиниць за проєкт. Це приклад обчислень, а не ціна послуг.</p>
+                    <div class="form-group">
+                        <label for="orderPromo">Промокод (необов’язково)</label>
+                        <input id="orderPromo" name="orderPromo" type="text" maxlength="32" placeholder="SALE10 — знижка 10%" aria-describedby="promoStatus">
+                        <span id="promoStatus" role="status" aria-live="polite"></span>
+                    </div>
+                    <dl class="request-totals">
+                        <div><dt>До знижки</dt><dd><span id="requestSubtotal">0.00</span> ум. од.</dd></div>
+                        <div><dt>Знижка</dt><dd><span id="requestDiscount">0.00</span> ум. од.</dd></div>
+                        <div><dt>Підсумок</dt><dd><strong id="requestTotal">0.00</strong> ум. од.</dd></div>
+                    </dl>
+                </fieldset>
+                <p class="input-error" id="orderError" role="alert"></p>
+                <button class="btn btn-full" type="submit" id="btnPlaceOrder" aria-describedby="requestNote">Сформувати заявку</button>
+            </form>
         </div>
     </section>
 </div>
 
-<script src="../assets/js/main.js?v=14" type="module"></script>
+<script src="../assets/js/main.js?v=15" type="module"></script>
 </body>
 </html>
+
 
 
 
