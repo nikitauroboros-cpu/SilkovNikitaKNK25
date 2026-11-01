@@ -2,7 +2,10 @@
 declare(strict_types=1);
 require_once __DIR__ . '/Task.php';
 
-class TaskRepository
+require_once __DIR__ . '/TaskStorageInterface.php';
+require_once __DIR__ . '/Exceptions.php';
+
+class TaskRepository implements TaskStorageInterface
 {
     /** @var Task[] */
     private array $tasks = [];
@@ -23,6 +26,7 @@ class TaskRepository
         return null;
     }
 
+    /** @throws ValidationException */
     public function add(string $title, ?string $deadline = null,
         string $description = '', string $priority = 'Medium', ?string $avatar = null): Task
     {
@@ -34,16 +38,18 @@ class TaskRepository
         });
     }
 
+    /** @throws TaskNotFoundException */
     public function complete(int $id): bool
     {
         return $this->update(function () use ($id): bool {
             $task = $this->findById($id);
-            if ($task === null) return false;
+            if ($task === null) throw new TaskNotFoundException($id);
             $task->complete();
             return true;
         });
     }
 
+    /** @throws TaskNotFoundException */
     public function delete(int $id): bool
     {
         return $this->update(function () use ($id): bool {
@@ -54,7 +60,7 @@ class TaskRepository
                     return true;
                 }
             }
-            return false;
+            throw new TaskNotFoundException($id);
         });
     }
 

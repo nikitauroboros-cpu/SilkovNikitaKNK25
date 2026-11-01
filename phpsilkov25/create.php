@@ -42,6 +42,9 @@ if ($submitted) {
     if ($title === '') {
         $errors[] = 'Назва є обов’язковою.';
     }
+    if ($title !== '' && mb_strlen($title, 'UTF-8') < 3) {
+        $errors[] = 'Назва завдання повинна містити щонайменше 3 символи.';
+    }
     if ($description === '') {
         $errors[] = 'Опис є обов’язковим.';
     }
@@ -65,6 +68,8 @@ if ($submitted) {
         try {
             $repo = new TaskRepository(__DIR__ . '/tasks.json');
             $repo->add($title, $deadline ?: null, $description, $priority, $avatarPath);
+        } catch (ValidationException $error) {
+            $errors = array_merge($errors, $error->getErrors());
         } catch (Throwable $error) {
             $errors[] = 'Не вдалося зберегти завдання. Перевірте файл tasks.json та права запису.';
         }

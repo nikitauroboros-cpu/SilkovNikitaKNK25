@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/TimestampableTrait.php';
+require_once __DIR__ . '/Exceptions.php';
+
 class Task
 {
+    use TimestampableTrait;
     public function __construct(
         public readonly int $id,
         private string $title,
@@ -10,22 +14,29 @@ class Task
         private ?string $deadline = null,
         private string $description = '',
         private string $priority = 'Medium',
-        private ?string $createdAt = null,
+        ?string $createdAt = null,
         private ?string $avatar = null,
+        ?string $updatedAt = null,
     ) {
+        $this->initTimestamps($createdAt, $updatedAt);
         $this->title = trim($title);
+        $errors = [];
         if ($this->title === '') {
-            throw new InvalidArgumentException('Назва завдання не може бути порожньою.');
+            $errors[] = 'Назва завдання є обов’язковою для заповнення.';
+        } elseif (mb_strlen($this->title, 'UTF-8') < 3) {
+            $errors[] = 'Назва завдання повинна містити щонайменше 3 символи.';
         }
-        if ($deadline !== null) {
-            $date = DateTimeImmutable::createFromFormat('!Y-m-d', $deadline);
-            if (!$date || $date->format('Y-m-d') !== $deadline) {
-                throw new InvalidArgumentException('Вкажіть коректну дату дедлайну.');
+        if ($deadline === '') $this->deadline = null;
+        if ($this->deadline !== null) {
+            $date = DateTimeImmutable::createFromFormat('!Y-m-d', $this->deadline);
+            if (!$date || $date->format('Y-m-d') !== $this->deadline) {
+                $errors[] = 'Вкажіть коректну дату дедлайну.';
             }
         }
         if (!in_array($priority, ['Low', 'Medium', 'High'], true)) {
-            throw new InvalidArgumentException('Некоректний пріоритет.');
+            $errors[] = 'Некоректний пріоритет.';
         }
+        if ($errors !== []) throw new ValidationException($errors);
     }
 
     public function getId(): int { return $this->id; }
@@ -34,7 +45,6 @@ class Task
     public function getDeadline(): ?string { return $this->deadline; }
     public function getDescription(): string { return $this->description; }
     public function getPriority(): string { return $this->priority; }
-    public function getCreatedAt(): ?string { return $this->createdAt; }
     public function getAvatar(): ?string { return $this->avatar; }
 
     public function isOverdue(): bool
@@ -47,6 +57,7 @@ class Task
     public function complete(): void
     {
         $this->isCompleted = true;
+        $this->touch();
     }
 
     public function getStatusLabel(): string
@@ -65,7 +76,8 @@ class Task
             'deadline' => $this->deadline,
             'description' => $this->description,
             'priority' => $this->priority,
-            'created_at' => $this->createdAt,
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
             'avatar' => $this->avatar,
         ];
     }
@@ -79,7 +91,8 @@ class Task
             deadline: $data['deadline'] ?? null,
             description: $data['description'] ?? '',
             priority: $data['priority'] ?? 'Medium',
-            createdAt: $data['created_at'] ?? null,
+            createdAt: $data['createdAt'] ?? $data['created_at'] ?? null,
+            updatedAt: $data['updatedAt'] ?? null,
             avatar: $data['avatar'] ?? null,
         );
     }
