@@ -817,4 +817,4 @@ if ($submitted) {
 
 - [Умова](https://surkovkostiantyn.github.io/nmk/programming/lab_11.html)
 - [Код](https://github.com/nikitauroboros-cpu/SilkovNikitaKNK25/tree/main/phpsilkov25)
-- COMMIT_LINK
+- [Коміт реалізації ЛР11](https://github.com/nikitauroboros-cpu/SilkovNikitaKNK25/commit/14e8e44fdd2b143ded77737c887a0bfb81649380)
