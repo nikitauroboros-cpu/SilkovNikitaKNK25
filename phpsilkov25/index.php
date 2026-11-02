@@ -128,6 +128,7 @@ if ($redirect && $requestHandled) {
     </header>
     <main>
         <h2>Мої завдання</h2>
+        <p><a href="test_db.php">Діагностика БД (MySQL PDO)</a></p>
         <p><a href="create.php">Додати нове завдання</a></p>
         <?php if (($_GET['created'] ?? '') === '1'): ?>
             <p>Завдання збережено.</p>
