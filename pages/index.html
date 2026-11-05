@@ -23,7 +23,7 @@
         media.addEventListener("change", applySavedTheme);
     })();
     </script>
-    <link rel="stylesheet" href="../assets/css/style.css?v=16">
+    <link rel="stylesheet" href="../assets/css/style.css?v=17">
 </head>
 
 <body>
@@ -91,12 +91,19 @@
                 <div class="spinner" aria-hidden="true"></div>
                 <p>Завантаження проєктів з GitHub...</p>
             </div>
-            <div class="search-bar">
-                <label for="searchInput">Пошук проєктів</label>
-                <input type="search" id="searchInput" placeholder="Введіть назву проєкту…" disabled>
-                <span id="searchResultCount" role="status" aria-live="polite"></span>
-            </div>
+            <section class="catalog-toolbar" aria-label="Фільтри каталогу">
+                <label>Пошук проєктів<input type="search" id="searchInput" maxlength="50" placeholder="Назва проєкту…" disabled></label>
+                <label>Мова проєкту<select id="categorySelect" disabled><option value="all">Усі мови</option></select></label>
+                <label>Сортування<select id="sortSelect" disabled><option value="default">Останні з GitHub</option><option value="title_asc">Назва: А → Я</option><option value="title_desc">Назва: Я → А</option><option value="stars_desc">Найбільше зірок</option><option value="updated_desc">Нещодавно оновлені</option></select></label>
+                <label>На сторінці<select id="perPageSelect" disabled><option>1</option><option>2</option><option selected>4</option><option>6</option><option>8</option><option>12</option></select></label>
+                <button class="btn catalog-secondary" type="button" id="resetFiltersBtn">Скинути</button>
+                <button class="btn catalog-secondary" type="button" id="shareLinkBtn">Поділитися посиланням</button>
+            </section>
+            <p id="searchResultCount" class="catalog-info" role="status" aria-live="polite"></p>
+            <p id="shareStatus" class="catalog-info" role="status" aria-live="polite"></p>
+            <input id="shareLinkFallback" class="share-fallback" aria-label="Посилання для копіювання" readonly hidden>
             <div class="products-grid" aria-busy="true"></div>
+            <nav id="pagination" class="pagination" aria-label="Сторінки проєктів"></nav>
             <button class="btn hidden" id="retryProjects" type="button">Спробувати ще раз</button>
         </section>
         <section class="hero" id="selected-projects" aria-labelledby="selection-title">
@@ -205,7 +212,7 @@
     </section>
 </div>
 
-<script src="../assets/js/main.js?v=16" type="module"></script>
+<script src="../assets/js/main.js?v=17" type="module"></script>
 </body>
 </html>
 

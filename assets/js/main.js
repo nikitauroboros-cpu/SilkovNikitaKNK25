@@ -1,3 +1,4 @@
+import { CATALOG_DEFAULTS, readStateFromURL, validateCategory, stateURL, sortProjects, paginateProducts } from './catalog-state.js';
 // ЛР №13: справжній HTTP GET-запит замість локального масиву й таймера.
 const PROJECTS_API = "https://api.github.com/users/nikitauroboros-cpu/repos?type=owner&sort=updated&per_page=8";
 const container = document.querySelector(".products-grid");
@@ -180,7 +181,9 @@ async function fetchProjects() {
                 level: typeof repo.language === "string" ? repo.language : "Мову не визначено",
                 image: githubURL(repo.owner?.avatar_url, "avatars.githubusercontent.com"),
                 alt: `Автор проєкту ${repo.name}`,
-                url: githubURL(repo.html_url, "github.com")
+                url: githubURL(repo.html_url, "github.com"),
+                stars: Number.isSafeInteger(repo.stargazers_count) ? repo.stargazers_count : 0,
+                updated: Date.parse(repo.updated_at) || 0
             }));
     } catch (error) {
         console.error("Помилка завантаження проєктів:", error);
@@ -202,6 +205,7 @@ function renderProjects(projectsToDisplay) {
                 <h3 class="product-title">${escapeHTML(project.title)}</h3>
                 <p class="product-desc">${escapeHTML(project.description)}</p>
                 <span class="product-price">${escapeHTML(project.level)}</span>
+                <p class="project-stars">★ ${project.stars ?? 0} зірок на GitHub</p>
                 ${project.url ? `<p><a draggable="false" href="${escapeHTML(project.url)}" target="_blank" rel="noopener noreferrer">Переглянути на GitHub ↗</a></p>` : ""}
                 <button class="btn-buy" type="button" data-id="${project.id}" aria-pressed="false">Обрати проєкт</button>
             </article>
@@ -209,21 +213,112 @@ function renderProjects(projectsToDisplay) {
     syncProjectButtons();
 }
 
-function applyProjectSearch() {
-    const query = searchInput.value.trim().toLowerCase();
-    const matchedProjects = globalStoreProjects.filter((project) => project.title.toLowerCase().includes(query));
-    searchResultCount.textContent = query ? `Знайдено проєктів: ${matchedProjects.length}` : "";
-    renderProjects(matchedProjects);
+// ЛР17: URL є джерелом відновлення; обране й тема залишаються у Web Storage.
+let catalogState = readStateFromURL(location.search);
+let catalogReady = false;
+let searchTimer;
+const categorySelect = document.getElementById('categorySelect');
+const sortSelect = document.getElementById('sortSelect');
+const perPageSelect = document.getElementById('perPageSelect');
+const pagination = document.getElementById('pagination');
+const shareStatus = document.getElementById('shareStatus');
+function syncURL(mode) {
+    const url = stateURL(location.href, catalogState);
+    // replace також створює початковий знімок history.state, push — лише реальні зміни.
+    if (mode === 'replace' || url.href !== location.href) history[mode === 'push' ? 'pushState' : 'replaceState']({...catalogState}, '', url);
 }
-
-searchInput.addEventListener("input", applyProjectSearch);
+function applyStateToControls() {
+    searchInput.value = catalogState.q;
+    categorySelect.value = catalogState.category;
+    sortSelect.value = catalogState.sort;
+    perPageSelect.value = String(catalogState.perPage);
+}
+function populateCategories() {
+    categorySelect.replaceChildren(new Option('Усі мови', 'all'));
+    [...new Set(globalStoreProjects.map(p => p.level))].sort().forEach(value => categorySelect.add(new Option(value, value)));
+}
+function updateCatalog(mode) {
+    if (!catalogReady) return;
+    catalogState.category = validateCategory(catalogState.category, globalStoreProjects);
+    const query = catalogState.q.toLocaleLowerCase();
+    const filtered = globalStoreProjects.filter(p => p.title.toLocaleLowerCase().includes(query) && (catalogState.category === 'all' || p.level === catalogState.category));
+    const result = paginateProducts(sortProjects(filtered, catalogState.sort), catalogState.page, catalogState.perPage);
+    const corrected = catalogState.page !== result.currentPage;
+    catalogState.page = result.currentPage;
+    applyStateToControls();
+    renderProjects(result.items);
+    searchResultCount.textContent = result.totalItems ? `Показано ${result.startIndex+1}–${result.startIndex+result.items.length} з ${result.totalItems} проєктів` : catalogState.q ? `За запитом «${catalogState.q}» нічого не знайдено` : 'У цій категорії немає проєктів';
+    pagination.replaceChildren();
+    if (result.totalPages > 1) {
+        const add = (label, page, disabled, current = false) => {
+            const button = document.createElement('button');
+            button.type = 'button'; button.className = 'page-btn'; button.textContent = label;
+            button.dataset.page = String(page); button.disabled = disabled;
+            if (current) button.setAttribute('aria-current', 'page');
+            pagination.append(button);
+        };
+        add('← Попередня', result.currentPage-1, result.currentPage === 1);
+        for (let page=1; page<=result.totalPages; page++) add(String(page), page, false, page === result.currentPage);
+        add('Наступна →', result.currentPage+1, result.currentPage === result.totalPages);
+    }
+    if (mode || corrected) syncURL(mode || 'replace');
+}
+function flushSearch() {
+    clearTimeout(searchTimer);
+    catalogState.q = searchInput.value.trim().slice(0,50);
+}
+searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { flushSearch(); catalogState.page=1; updateCatalog('replace'); }, 300);
+});
+for (const [control,key] of [[categorySelect,'category'], [sortSelect,'sort'], [perPageSelect,'perPage']]) {
+    control.addEventListener('change', () => {
+        flushSearch(); catalogState[key] = key === 'perPage' ? Number(control.value) : control.value;
+        catalogState.page=1; updateCatalog('push');
+    });
+}
+function goToPage(page) {
+    if (!catalogReady || page === catalogState.page) return;
+    flushSearch(); catalogState.page=page; updateCatalog('push');
+    document.querySelector('.catalog-toolbar').scrollIntoView({behavior:'smooth', block:'start'});
+}
+pagination.addEventListener('click', event => {
+    const button = event.target.closest('button[data-page]');
+    if (button && !button.disabled) goToPage(Number(button.dataset.page));
+});
+document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+    clearTimeout(searchTimer); catalogState={...CATALOG_DEFAULTS}; updateCatalog('push');
+});
+window.addEventListener('popstate', () => {
+    clearTimeout(searchTimer); catalogState=readStateFromURL(location.search);
+    applyStateToControls(); updateCatalog(); // не додає записів в історію
+});
+document.addEventListener('keydown', event => {
+    if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey || event.defaultPrevented || !catalogReady) return;
+    if (event.target.closest('input, textarea, select, button, a, [contenteditable], [role="dialog"]') || !document.getElementById('cartOverlay').classList.contains('hidden')) return;
+    const buttons = [...pagination.querySelectorAll('button')];
+    const button = event.key === 'ArrowLeft' ? buttons[0] : event.key === 'ArrowRight' ? buttons.at(-1) : null;
+    if (button && !button.disabled) { event.preventDefault(); goToPage(Number(button.dataset.page)); }
+});
+document.getElementById('shareLinkBtn').addEventListener('click', async () => {
+    const changed = searchInput.value.trim().slice(0,50) !== catalogState.q;
+    flushSearch(); if (changed) catalogState.page=1;
+    updateCatalog('replace');
+    const field = document.getElementById('shareLinkFallback');
+    try { await navigator.clipboard.writeText(location.href); field.hidden=true; shareStatus.textContent='Посилання скопійовано.'; }
+    catch { field.hidden=false; field.value=location.href; field.focus(); field.select(); shareStatus.textContent='Скопіюйте виділене посилання вручну.'; }
+});
+applyStateToControls();
 
 async function initProjects() {
     const loader = document.getElementById("loader");
     loader.classList.remove("hidden");
     retryButton.classList.add("hidden");
     retryButton.disabled = true;
+    catalogReady = false;
+    pagination.replaceChildren();
     searchInput.disabled = true;
+    [categorySelect,sortSelect,perPageSelect].forEach(c => c.disabled=true);
     searchResultCount.textContent = "";
     container.replaceChildren();
     container.setAttribute("aria-busy", "true");
@@ -231,7 +326,11 @@ async function initProjects() {
         const data = await fetchProjects();
         globalStoreProjects = data;
         searchInput.disabled = false;
-        applyProjectSearch();
+        catalogReady = true;
+        populateCategories();
+        catalogState = readStateFromURL(location.search);
+        [categorySelect,sortSelect,perPageSelect].forEach(c => c.disabled=false);
+        updateCatalog("replace");
         updateUI();
     } catch (error) {
         const message = document.createElement("p");
