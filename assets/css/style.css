@@ -775,3 +775,22 @@ button:disabled { opacity: 0.5; cursor: default; }
 :root.dark-theme input::placeholder { color: #9ca3af; }
 :root.dark-theme .input-error, :root.dark-theme .load-error { color: #fca5a5; }
 :root.dark-theme .request-result { background: #123a29; color: #bbf7d0; }
+
+/* ЛР17: ті самі кольори та тема портфоліо. */
+.catalog-toolbar { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:22px 0 12px; scroll-margin-top:20px; }
+.catalog-toolbar label { display:flex; flex:1 1 170px; flex-direction:column; gap:7px; font-size:.88rem; font-weight:600; }
+.catalog-toolbar input,.catalog-toolbar select,.share-fallback { width:100%; min-width:0; padding:11px; border:1px solid var(--card-border); border-radius:8px; background:var(--bg-color); color:var(--text-color); font:inherit; }
+.catalog-toolbar label:first-child { flex-basis:230px; }
+.catalog-toolbar button { padding:12px 16px; }
+.catalog-secondary { background:var(--bg-color); color:var(--text-color); border:1px solid var(--card-border); }
+.catalog-secondary:hover { color:white; }
+.catalog-info { color:var(--muted-color); margin:8px 0 14px; overflow-wrap:anywhere; }
+.catalog-info:empty { display:none; }
+.pagination { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:24px 0; }
+.pagination:empty { display:none; }
+.page-btn { border:1px solid var(--card-border); border-radius:8px; padding:10px 15px; background:var(--bg-color); color:var(--text-color); cursor:pointer; }
+.page-btn[aria-current="page"] { background:var(--accent-color); color:white; border-color:var(--accent-color); font-weight:bold; }
+.page-btn:disabled { opacity:.45; cursor:default; }
+.page-btn:focus-visible,.catalog-toolbar :focus-visible { outline:3px solid var(--accent-color); outline-offset:3px; }
+.project-stars { color:var(--muted-color); font-size:.9rem; }
+.share-fallback { margin:0 0 16px; }
