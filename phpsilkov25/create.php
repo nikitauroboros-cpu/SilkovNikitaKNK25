@@ -2,7 +2,9 @@
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/TaskRepository.php';
-if (($_SESSION['is_logged_in'] ?? false) !== true) {
+require_once __DIR__ . '/Database.php';
+$userId = $_SESSION['user_id'] ?? null;
+if (!is_int($userId) || $userId < 1 || !isset($_SESSION['csrf_token'])) {
     header('Location: login.php');
     exit;
 }
@@ -51,7 +53,12 @@ if ($submitted) {
     if (!in_array($priority, ['Low', 'Medium', 'High'], true)) {
         $errors[] = 'Оберіть пріоритет Low, Medium або High.';
     }
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    $validToken = is_string($token) && hash_equals($_SESSION['csrf_token'], $token);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$validToken) {
+        $errors[] = 'Оновіть сторінку та повторіть дію.';
+    }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken && ($errors === [] || $isDemo)) {
         require __DIR__ . '/upload.php';
         ob_start();
         var_dump($_FILES);
@@ -66,12 +73,12 @@ if ($submitted) {
         $dump = ob_get_clean() . "\n\$_FILES:\n" . $dump;
     } elseif (empty($errors)) {
         try {
-            $repo = new TaskRepository(__DIR__ . '/tasks.json');
-            $repo->add($title, $deadline ?: null, $description, $priority, $avatarPath);
+            $repo = new TaskRepository(Database::connect());
+            $repo->add($title, $userId, $deadline ?: null, $description, $priority, $avatarPath);
         } catch (ValidationException $error) {
             $errors = array_merge($errors, $error->getErrors());
         } catch (Throwable $error) {
-            $errors[] = 'Не вдалося зберегти завдання. Перевірте файл tasks.json та права запису.';
+            $errors[] = 'Не вдалося зберегти завдання. Перевірте підключення до бази даних.';
         }
         if (!empty($errors) && $avatarPath !== null) {
             unlink(__DIR__ . '/' . $avatarPath);
@@ -124,6 +131,9 @@ if ($submitted) {
         </div>
     <?php endif; ?>
     <form action="<?= $method === 'GET' ? 'create.php' : ($isDemo ? 'create.php?demo=1' : 'create.php') ?>" method="<?= escape($method) ?>" enctype="multipart/form-data">
+        <?php if ($method === 'POST'): ?>
+            <input type="hidden" name="csrf_token" value="<?= escape($_SESSION['csrf_token']) ?>">
+        <?php endif; ?>
         <?php if ($method === 'GET'): ?>
             <input type="hidden" name="method" value="GET">
         <?php endif; ?>

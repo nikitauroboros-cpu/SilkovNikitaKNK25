@@ -17,6 +17,7 @@ class Task
         ?string $createdAt = null,
         private ?string $avatar = null,
         ?string $updatedAt = null,
+        public readonly ?int $userId = null,
     ) {
         $this->initTimestamps($createdAt, $updatedAt);
         $this->title = trim($title);
@@ -25,6 +26,9 @@ class Task
             $errors[] = 'Назва завдання є обов’язковою для заповнення.';
         } elseif (mb_strlen($this->title, 'UTF-8') < 3) {
             $errors[] = 'Назва завдання повинна містити щонайменше 3 символи.';
+        }
+        if (mb_strlen($this->title, 'UTF-8') > 255) {
+            $errors[] = 'Назва завдання повинна містити не більше 255 символів.';
         }
         if ($deadline === '') $this->deadline = null;
         if ($this->deadline !== null) {
@@ -71,6 +75,7 @@ class Task
     {
         return [
             'id' => $this->id,
+            'user_id' => $this->userId,
             'title' => $this->title,
             'isCompleted' => $this->isCompleted,
             'deadline' => $this->deadline,
@@ -85,9 +90,10 @@ class Task
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
+            id: (int) $data['id'],
+            userId: isset($data['user_id']) ? (int) $data['user_id'] : null,
             title: $data['title'],
-            isCompleted: $data['isCompleted'] ?? $data['is_completed'] ?? false,
+            isCompleted: (bool) ($data['isCompleted'] ?? $data['is_completed'] ?? false),
             deadline: $data['deadline'] ?? null,
             description: $data['description'] ?? '',
             priority: $data['priority'] ?? 'Medium',

@@ -1,18 +1,30 @@
 <?php
 session_start();
+require_once __DIR__ . '/Database.php';
 $error = '';
 $username = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = is_string($_POST['username'] ?? null) ? $_POST['username'] : '';
     $password = is_string($_POST['password'] ?? null) ? $_POST['password'] : '';
-    if ($username === 'admin' && $password === '12345') {
-        session_regenerate_id(true);
-        $_SESSION['is_logged_in'] = true;
-        $_SESSION['user_name'] = 'Адміністратор';
-        header('Location: index.php', true, 303);
-        exit;
+    try {
+        $stmt = Database::connect()->prepare('SELECT id, username, password FROM users WHERE username = :username');
+        $stmt->execute(['username' => $username]);
+        $user = $stmt->fetch();
+        if ($user && password_verify($password, $user['password'])) {
+            session_regenerate_id(true);
+            $_SESSION['is_logged_in'] = true;
+            $_SESSION['user_id'] = (int) $user['id'];
+            $_SESSION['user_name'] = $user['username'];
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            header('Location: index.php', true, 303);
+            exit;
+        }
+        $error = 'Невірний логін або пароль!';
+    } catch (PDOException $exception) {
+        error_log((string) $exception);
+        http_response_code(503);
+        $error = 'База даних тимчасово недоступна.';
     }
-    $error = 'Невірний логін або пароль!';
 }
 ?>
 <!DOCTYPE html>

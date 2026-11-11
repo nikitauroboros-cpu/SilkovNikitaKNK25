@@ -5,47 +5,21 @@ require_once __DIR__ . '/Task.php';
 
 interface TaskStorageInterface
 {
-    /**
-     * Повертає список усіх наявних завдань.
-     *
-     * @return Task[]
-     */
-    public function findAll(): array;
+    /** @return Task[] */
+    public function findAllByUser(int $userId, int $page = 1, int $perPage = 5): array;
 
-    /**
-     * Знаходить завдання за його ідентифікатором.
-     */
-    public function findById(int $id): ?Task;
+    public function findById(int $id, int $userId): ?Task;
 
-    /**
-     * Додає нове завдання до сховища.
-     *
-     * @throws ValidationException якщо назва або дедлайн не проходять валідацію
-     */
-    public function add(string $title, ?string $deadline = null): Task;
+    public function add(string $title, int $userId, ?string $deadline = null,
+        string $description = '', string $priority = 'Medium', ?string $avatar = null): Task;
 
-    /**
-     * Позначає завдання як виконане.
-     *
-     * @throws TaskNotFoundException якщо завдання з таким id не існує
-     */
-    public function complete(int $id): bool;
+    public function complete(int $id, int $userId): bool;
 
-    /**
-     * Видаляє завдання зі сховища.
-     *
-     * @throws TaskNotFoundException якщо завдання з таким id не існує
-     */
-    public function delete(int $id): bool;
+    public function delete(int $id, int $userId): bool;
 
-    /**
-     * Повертає кількість виконаних завдань.
-     */
-    public function countCompleted(): int;
+    public function countByUser(int $userId): int;
 
-    /**
-     * Повертає кількість прострочених завдань.
-     */
-    public function countOverdue(): int;
+    public function countCompletedByUser(int $userId): int;
+
+    public function countOverdueByUser(int $userId): int;
 }
-
